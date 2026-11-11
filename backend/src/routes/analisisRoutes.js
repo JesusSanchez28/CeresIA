@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { obtenerHistorial } = require('../controllers/analisisController');
-const { registrarAnalisis } = require('../controllers/analisisController');
+const { registrarAnalisis, obtenerHistorial } = require('../controllers/analisisController');
 
-// Ruta POST para registrar un análisis completo usando el Stored Procedure
-router.post('/', registrarAnalisis);
+// GET /api/analisis -> Obtiene la tabla del historial
 router.get('/', obtenerHistorial);
+
+// POST /api/analisis -> Registra un nuevo análisis (con IA)
+router.post('/', registrarAnalisis);
+// Ruta POST para registrar un análisis completo usando el Stored Procedure
+
 module.exports = router;
