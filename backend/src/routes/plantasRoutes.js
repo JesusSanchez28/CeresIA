@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
+
+// Asegúrate de que la ruta apunte correctamente al archivo en controllers:
 const { obtenerPlantas } = require('../controllers/plantasController');
 
-// Definir la ruta GET para el catálogo
 router.get('/', obtenerPlantas);
 
 module.exports = router;
-
