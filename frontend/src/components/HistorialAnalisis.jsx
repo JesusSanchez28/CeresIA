@@ -27,6 +27,8 @@ const HistorialAnalisis = () => {
                                 <th>#</th>
                                 <th>Usuario</th>
                                 <th>Planta</th>
+                                <th>Ubicación</th>
+                                <th>Diagnóstico IA</th>
                                 <th>Suelo</th>
                                 <th>Temp (°C)</th>
                                 <th>Humedad (%)</th>
@@ -39,7 +41,13 @@ const HistorialAnalisis = () => {
                                 <tr key={item.id}>
                                     <td>{item.id}</td>
                                     <td>{item.usuario}</td>
+                                    
                                     <td>{item.planta}</td>
+                                    <td>{item.ubicacion}</td>
+                                    <td style={{ maxWidth: '300px', fontSize: '0.9rem' }}>
+                                        {item.diagnostico}
+                                    </td>
+                                    
                                     <td>{item.tipo_suelo}</td>
                                     <td>{item.temperatura}°C</td>
                                     <td>{item.humedad}%</td>

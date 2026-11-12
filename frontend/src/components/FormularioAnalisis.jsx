@@ -2,35 +2,77 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 
 const FormularioAnalisis = ({ onAnalisisCreado }) => {
-    const [plantas, setPlantas] = useState([]);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [loading, setLoading] = useState(false);
     const [mensaje, setMensaje] = useState(null);
 
-    const [formData, setFormData] = useState({
-        id_usuario: 1, // Usuario de prueba (Carlos Pérez)
-        id_planta_semilla: '',
-        imagen_base64: '',
-        mime_type: 'image/jpeg',
-        tipo_suelo: 'Franco arcilloso',
-        temperatura: '',
-        humedad: '',
-        es_apto: true
+    const [coordenadas, setCoordenadas] = useState({ latitud: null, longitud: null });
+    const [climaActual, setClimaActual] = useState({
+        cargando: true,
+        error: null,
+        temperatura: null,
+        humedad: null,
+        ubicacionTexto: 'Detectando ubicación del dispositivo...'
     });
 
-    // Cargar catálogo de plantas para el selector
+    const [formData, setFormData] = useState({
+        id_usuario: 1,
+        imagen_base64: '',
+        mime_type: 'image/jpeg',
+        tipo_suelo: 'Franco arcilloso'
+    });
+
     useEffect(() => {
-        api.get('/plantas')
-            .then(res => {
-                setPlantas(res.data);
-                if (res.data.length > 0) {
-                    setFormData(prev => ({ ...prev, id_planta_semilla: res.data[0].id }));
+        if (!navigator.geolocation) {
+            setClimaActual({
+                cargando: false,
+                error: 'Tu navegador no soporta geolocalización.',
+                temperatura: null,
+                humedad: null,
+                ubicacionTexto: 'No disponible'
+            });
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                setCoordenadas({ latitud: latitude, longitud: longitude });
+
+                try {
+                    const res = await api.get(`/analisis/clima?lat=${latitude}&lon=${longitude}`);
+
+                    setClimaActual({
+                        cargando: false,
+                        error: null,
+                        temperatura: res.data.temperatura,
+                        humedad: res.data.humedad,
+                        ubicacionTexto: `${res.data.ubicacion} (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`
+                    });
+                } catch (err) {
+                    console.error('Error al consultar clima desde backend:', err);
+                    setClimaActual({
+                        cargando: false,
+                        error: 'No se pudo conectar con el servidor para obtener el clima.',
+                        temperatura: null,
+                        humedad: null,
+                        ubicacionTexto: `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`
+                    });
                 }
-            })
-            .catch(err => console.error('Error al cargar catálogo:', err));
+            },
+            () => {
+                setClimaActual({
+                    cargando: false,
+                    error: 'Activa el permiso de ubicación en tu navegador.',
+                    temperatura: null,
+                    humedad: null,
+                    ubicacionTexto: 'Permiso denegado'
+                });
+            },
+            { enableHighAccuracy: true }
+        );
     }, []);
 
-    // Manejar subida de archivo y conversión a Base64
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -38,7 +80,6 @@ const FormularioAnalisis = ({ onAnalisisCreado }) => {
 
             const reader = new FileReader();
             reader.onloadend = () => {
-                // Extraer únicamente el string Base64 quitando el prefijo data:image/...;base64,
                 const base64String = reader.result.split(',')[1];
                 setFormData(prev => ({
                     ...prev,
@@ -50,27 +91,28 @@ const FormularioAnalisis = ({ onAnalisisCreado }) => {
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setMensaje(null);
 
         try {
-            const response = await api.post('/analisis', formData);
-            setMensaje({ tipo: 'success', texto: response.data.mensaje || '¡Análisis guardado con éxito!' });
+            const payload = {
+                ...formData,
+                latitud: coordenadas.latitud,
+                longitud: coordenadas.longitud
+            };
+
+            const response = await api.post('/analisis', payload);
+            setMensaje({ 
+                tipo: 'success', 
+                texto: `${response.data.mensaje} — Ubicación: ${response.data.clima?.ubicacion}.` 
+            });
             setLoading(false);
             if (onAnalisisCreado) onAnalisisCreado();
         } catch (err) {
-            console.error('Error al registrar análisis:', err);
-            setMensaje({ tipo: 'danger', texto: 'Error al enviar el análisis al servidor.' });
+            console.error('Error al procesar análisis:', err);
+            setMensaje({ tipo: 'danger', texto: err.response?.data?.error || 'Error al analizar la imagen.' });
             setLoading(false);
         }
     };
@@ -78,111 +120,54 @@ const FormularioAnalisis = ({ onAnalisisCreado }) => {
     return (
         <div className="card shadow-sm mb-4">
             <div className="card-header bg-success text-white">
-                <h4 className="mb-0">🧪 Nuevo Análisis Agroclimático con Gemini IA</h4>
+                <h4 className="mb-0">📸 Escaneo y Análisis Agroclimático (CeresIA)</h4>
             </div>
             <div className="card-body">
+                <div className="alert alert-info d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <strong>📍 Sensor GPS del Dispositivo:</strong> {climaActual.ubicacionTexto}
+                        {climaActual.error && <div className="text-danger small mt-1">{climaActual.error}</div>}
+                    </div>
+                    {!climaActual.cargando && climaActual.temperatura !== null && (
+                        <div className="mt-2 mt-md-0">
+                            <span className="badge bg-primary fs-6 me-2">
+                                🌡️ Temp: {climaActual.temperatura}°C
+                            </span>
+                            <span className="badge bg-info text-dark fs-6">
+                                💧 Humedad: {climaActual.humedad}%
+                            </span>
+                        </div>
+                    )}
+                </div>
+
                 {mensaje && <div className={`alert alert-${mensaje.tipo}`}>{mensaje.texto}</div>}
 
                 <form onSubmit={handleSubmit}>
-                    <div className="row">
-                        <div className="col-md-6 mb-3">
-                            <label className="form-label font-weight-bold">Seleccionar Planta/Semilla</label>
-                            <select 
-                                className="form-select" 
-                                name="id_planta_semilla" 
-                                value={formData.id_planta_semilla} 
-                                onChange={handleChange} 
-                                required
-                            >
-                                {plantas.map(p => (
-                                    <option key={p.id} value={p.id}>
-                                        {p.nombreComun} ({p.nombreCientifico})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="col-md-6 mb-3">
-                            <label className="form-label font-weight-bold">Fotografía de la Planta/Semilla</label>
-                            <input 
-                                type="file" 
-                                className="form-control" 
-                                accept="image/*" 
-                                onChange={handleImageChange} 
-                                required
-                            />
-                        </div>
+                    <div className="mb-3">
+                        <label className="form-label fw-bold">Sube o toma una foto de la Planta o Semilla</label>
+                        <input 
+                            type="file" 
+                            className="form-control form-control-lg" 
+                            accept="image/*" 
+                            capture="environment"
+                            onChange={handleImageChange} 
+                            required
+                        />
                     </div>
 
                     {previewUrl && (
                         <div className="text-center mb-3">
                             <img 
                                 src={previewUrl} 
-                                alt="Vista previa" 
+                                alt="Vista previa del cultivo" 
                                 className="img-thumbnail" 
-                                style={{ maxHeight: '180px' }} 
+                                style={{ maxHeight: '220px' }} 
                             />
                         </div>
                     )}
 
-                    <div className="row">
-                        <div className="col-md-4 mb-3">
-                            <label className="form-label font-weight-bold">Tipo de Suelo</label>
-                            <input 
-                                type="text" 
-                                className="form-control" 
-                                name="tipo_suelo" 
-                                value={formData.tipo_suelo} 
-                                onChange={handleChange} 
-                                required 
-                            />
-                        </div>
-
-                        <div className="col-md-4 mb-3">
-                            <label className="form-label font-weight-bold">Temperatura (°C)</label>
-                            <input 
-                                type="number" 
-                                step="0.1" 
-                                className="form-control" 
-                                name="temperatura" 
-                                value={formData.temperatura} 
-                                onChange={handleChange} 
-                                placeholder="Ej. 18.5"
-                                required 
-                            />
-                        </div>
-
-                        <div className="col-md-4 mb-3">
-                            <label className="form-label font-weight-bold">Humedad (%)</label>
-                            <input 
-                                type="number" 
-                                step="0.1" 
-                                className="form-control" 
-                                name="humedad" 
-                                value={formData.humedad} 
-                                onChange={handleChange} 
-                                placeholder="Ej. 70"
-                                required 
-                            />
-                        </div>
-                    </div>
-
-                    <div className="mb-3 form-check">
-                        <input 
-                            type="checkbox" 
-                            className="form-check-input" 
-                            id="es_apto" 
-                            name="es_apto" 
-                            checked={formData.es_apto} 
-                            onChange={handleChange} 
-                        />
-                        <label className="form-check-label" htmlFor="es_apto">
-                            ¿Condiciones óptimas/aptas para la siembra?
-                        </label>
-                    </div>
-
-                    <button type="submit" className="btn btn-success w-100" disabled={loading}>
-                        {loading ? 'Analizando imagen con Gemini IA...' : 'Analizar y Guardar'}
+                    <button type="submit" className="btn btn-success w-100 btn-lg mt-2" disabled={loading}>
+                        {loading ? '🤖 Identificando especie y evaluando clima con Gemini IA...' : '🚀 Identificar y Analizar Ahora'}
                     </button>
                 </form>
             </div>
