@@ -1,6 +1,21 @@
 const db = require('../config/db');
-const { analizarImagenPlanta } = require('../services/geminiService');
+const { analizarImagenPlanta, recomendarCultivosPorClima } = require('../services/geminiService');
 const { obtenerClimaPorCoordenadas } = require('../services/climaService');
+
+const obtenerClima = async (req, res) => {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) {
+        return res.status(400).json({ error: 'Se requieren latitud y longitud.' });
+    }
+
+    try {
+        const clima = await obtenerClimaPorCoordenadas(lat, lon);
+        res.json(clima);
+    } catch (error) {
+        console.error('Error al consultar clima:', error);
+        res.status(500).json({ error: 'No se pudo obtener el clima para las coordenadas.' });
+    }
+};
 
 const registrarAnalisis = async (req, res) => {
     const { 
@@ -17,15 +32,21 @@ const registrarAnalisis = async (req, res) => {
     }
 
     try {
-        // 1. Obtener ubicación real, temperatura y humedad con las coordenadas del dispositivo
         const lat = latitud || 4.8143;
         const lon = longitud || -74.3547;
         const { ubicacion, temperatura, humedad } = await obtenerClimaPorCoordenadas(lat, lon);
 
-        // 2. Gemini identifica la planta/semilla, diagnostica y evalúa si el clima es apto
         const resultadoIA = await analizarImagenPlanta(imagen_base64, mime_type || 'image/jpeg', temperatura, humedad);
 
-        // 3. Buscar si la planta identificada ya existe en la tabla planta_semilla
+        // Si la imagen NO corresponde a material vegetal, avisamos sin guardar en BD
+        if (resultadoIA.es_planta === false) {
+            return res.status(200).json({
+                es_planta: false,
+                mensaje: 'No se detectó una planta o semilla en la imagen.',
+                diagnostico: resultadoIA.diagnostico
+            });
+        }
+
         const buscarPlantaQuery = 'SELECT id_planta_semilla FROM planta_semilla WHERE LOWER(nombre_comun) = LOWER(?) LIMIT 1';
         
         db.query(buscarPlantaQuery, [resultadoIA.nombre_comun], (err, rows) => {
@@ -57,15 +78,18 @@ const registrarAnalisis = async (req, res) => {
                         return res.status(500).json({ error: 'Error al guardar el análisis completo' });
                     }
                     res.status(201).json({ 
+                        es_planta: true,
                         mensaje: `¡Identificado: ${resultadoIA.nombre_comun} (${resultadoIA.nombre_cientifico})!`,
                         planta: resultadoIA.nombre_comun,
+                        nombre_cientifico: resultadoIA.nombre_cientifico,
+                        tipo: resultadoIA.tipo,
+                        descripcion: resultadoIA.descripcion,
                         diagnostico: resultadoIA.diagnostico,
                         clima: { ubicacion, temperatura, humedad, es_apto: Boolean(es_apto) }
                     });
                 });
             };
 
-            // Si ya existe en el catálogo, usamos su ID; si no, la insertamos automáticamente
             if (rows.length > 0) {
                 guardarRegistroCompleto(rows[0].id_planta_semilla);
             } else {
@@ -90,6 +114,12 @@ const registrarAnalisis = async (req, res) => {
 };
 
 const obtenerHistorial = (req, res) => {
+    const { id_usuario } = req.query;
+
+    if (!id_usuario) {
+        return res.status(400).json({ error: 'Se requiere el id_usuario para consultar su historial.' });
+    }
+
     const query = `
         SELECT 
             ac.id_analisis_completo AS id,
@@ -105,16 +135,54 @@ const obtenerHistorial = (req, res) => {
         FROM analisis_completo ac
         JOIN usuario u ON ac.id_usuario = u.id_usuario
         JOIN planta_semilla ps ON ac.id_planta_semilla = ps.id_planta_semilla
+        WHERE ac.id_usuario = ?
         ORDER BY ac.fecha DESC
     `;
 
-    db.query(query, (err, results) => {
+    db.query(query, [id_usuario], (err, results) => {
         if (err) {
-            console.error('Error al obtener el historial:', err);
-            return res.status(500).json({ error: 'Error al consultar el historial' });
+            console.error('Error al obtener historial:', err);
+            return res.status(500).json({ error: 'Error al consultar el historial del usuario' });
         }
         res.json(results);
     });
 };
 
-module.exports = { registrarAnalisis, obtenerHistorial };
+const cacheCompatibilidad = new Map();
+
+const obtenerCompatibilidadZona = async (req, res) => {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) {
+        return res.status(400).json({ error: 'Se requieren latitud y longitud.' });
+    }
+
+    const cacheKey = `${Number(lat).toFixed(2)}_${Number(lon).toFixed(2)}`;
+    const cached = cacheCompatibilidad.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp < 30 * 60 * 1000)) {
+        return res.json(cached.data);
+    }
+
+    try {
+        const clima = await obtenerClimaPorCoordenadas(lat, lon);
+        const recomendaciones = await recomendarCultivosPorClima(
+            clima.ubicacion || `${lat}, ${lon}`,
+            clima.temperatura,
+            clima.humedad
+        );
+
+        const respuestaFinal = { clima, ...recomendaciones };
+        cacheCompatibilidad.set(cacheKey, { timestamp: Date.now(), data: respuestaFinal });
+
+        res.json(respuestaFinal);
+    } catch (error) {
+        console.error('Error detallado en compatibilidad:', error);
+        res.status(500).json({ error: error.message || 'No se pudo generar la recomendación agroclimática.' });
+    }
+};
+
+module.exports = { 
+    obtenerClima,
+    registrarAnalisis, 
+    obtenerHistorial, 
+    obtenerCompatibilidadZona 
+};
