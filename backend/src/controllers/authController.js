@@ -12,10 +12,16 @@ const registrarUsuario = async (req, res) => {
         return res.status(400).json({ error: 'Todos los campos (nombre, correo y contraseña) son obligatorios.' });
     }
 
+    const correoLimpio = correo.trim().toLowerCase();
+
     try {
         // 1. Verificar si el correo ya existe
-        db.query('SELECT id_usuario FROM usuario WHERE correo = ?', [correo], async (err, results) => {
-            if (err) return res.status(500).json({ error: 'Error en la base de datos.' });
+        db.query('SELECT id_usuario FROM usuario WHERE correo = ?', [correoLimpio], async (err, results) => {
+            if (err) {
+                console.error('❌ Error SQL en registro (SELECT):', err.code, err.sqlMessage);
+                return res.status(500).json({ error: `Error de base de datos (${err.code}): ${err.sqlMessage || err.message}` });
+            }
+
             if (results.length > 0) {
                 return res.status(409).json({ error: 'Este correo ya está registrado.' });
             }
@@ -26,14 +32,14 @@ const registrarUsuario = async (req, res) => {
 
             // 3. Insertar usuario en MySQL
             const insertQuery = 'INSERT INTO usuario (nombre, correo, password, rol) VALUES (?, ?, ?, ?)';
-            db.query(insertQuery, [nombre, correo, passwordHash, rol || 'Agricultor'], (errInsert, insertRes) => {
+            db.query(insertQuery, [nombre.trim(), correoLimpio, passwordHash, rol || 'Agricultor'], (errInsert, insertRes) => {
                 if (errInsert) {
-                    console.error('Error al registrar usuario:', errInsert);
-                    return res.status(500).json({ error: 'No se pudo crear el usuario.' });
+                    console.error('❌ Error SQL al insertar usuario:', errInsert.code, errInsert.sqlMessage);
+                    return res.status(500).json({ error: `No se pudo crear el usuario (${errInsert.code}): ${errInsert.sqlMessage || errInsert.message}` });
                 }
 
                 const token = jwt.sign(
-                    { id_usuario: insertRes.insertId, nombre, correo, rol: rol || 'Agricultor' },
+                    { id_usuario: insertRes.insertId, nombre: nombre.trim(), correo: correoLimpio, rol: rol || 'Agricultor' },
                     JWT_SECRET,
                     { expiresIn: '24h' }
                 );
@@ -43,14 +49,15 @@ const registrarUsuario = async (req, res) => {
                     token,
                     usuario: {
                         id_usuario: insertRes.insertId,
-                        nombre,
-                        correo,
+                        nombre: nombre.trim(),
+                        correo: correoLimpio,
                         rol: rol || 'Agricultor'
                     }
                 });
             });
         });
     } catch (error) {
+        console.error('❌ Error interno en registro:', error);
         res.status(500).json({ error: 'Error interno al registrar usuario.' });
     }
 };
@@ -63,8 +70,14 @@ const loginUsuario = (req, res) => {
         return res.status(400).json({ error: 'Ingresa tu correo y contraseña.' });
     }
 
-    db.query('SELECT * FROM usuario WHERE correo = ?', [correo], async (err, results) => {
-        if (err) return res.status(500).json({ error: 'Error en la base de datos.' });
+    const correoLimpio = correo.trim().toLowerCase();
+
+    db.query('SELECT * FROM usuario WHERE correo = ?', [correoLimpio], async (err, results) => {
+        if (err) {
+            console.error('❌ Error SQL en login (SELECT):', err.code, err.sqlMessage);
+            return res.status(500).json({ error: `Error de base de datos (${err.code}): ${err.sqlMessage || err.message}` });
+        }
+
         if (results.length === 0) {
             return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
         }
