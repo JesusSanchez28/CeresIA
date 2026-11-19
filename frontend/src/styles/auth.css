@@ -1,0 +1,672 @@
+/* ==========================================================================
+   CERES IA - Sistema de Diseño de Autenticación (Nivel Comercial Insignia)
+   ========================================================================== */
+
+.ceres-auth-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.12fr 1fr;
+  background-color: var(--ceres-ivory);
+  background-image: radial-gradient(rgba(22, 61, 43, 0.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* --------------------------------------------------------------------------
+   Panel Izquierdo: Escena Agrícola Viva + Tarjeta HUD de Precisión
+   -------------------------------------------------------------------------- */
+.ceres-visual-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3rem 3.5rem;
+  background-color: var(--ceres-forest);
+  background-size: cover;
+  background-position: center;
+  color: var(--ceres-ivory);
+  overflow: hidden;
+  transition: background-image 0.6s ease-in-out;
+}
+
+.ceres-visual-panel.mode-login {
+  background-image: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=1600&q=85');
+}
+
+.ceres-visual-panel.mode-register {
+  background-image: url('https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=1600&q=85');
+}
+
+.ceres-visual-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    155deg,
+    rgba(22, 61, 43, 0.91) 0%,
+    rgba(22, 61, 43, 0.68) 45%,
+    rgba(24, 34, 28, 0.94) 100%
+  );
+  z-index: 1;
+}
+
+/* Halo de luz sutil superior derecho */
+.ceres-visual-glow {
+  position: absolute;
+  top: -120px;
+  right: -100px;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(198, 166, 106, 0.16) 0%, transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.ceres-visual-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  max-width: 540px;
+}
+
+/* Logotipo CERES IA */
+.ceres-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.ceres-brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(248, 248, 243, 0.08);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(198, 166, 106, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ceres-gold);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.ceres-brand-name {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  color: var(--ceres-ivory);
+  line-height: 1.1;
+}
+
+.ceres-brand-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ceres-gold);
+  display: block;
+  margin-top: 2px;
+}
+
+/* Bloque Central Editorial */
+.ceres-hero-copy {
+  margin: auto 0;
+  padding: 2rem 0;
+}
+
+.ceres-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(248, 248, 243, 0.08);
+  border: 1px solid rgba(168, 190, 160, 0.25);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ceres-light);
+  margin-bottom: 1.35rem;
+}
+
+.ceres-eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--ceres-gold);
+}
+
+.ceres-hero-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(2rem, 2.9vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: var(--ceres-ivory);
+  margin: 0 0 1.15rem 0;
+}
+
+.ceres-hero-subtitle {
+  font-size: 0.97rem;
+  line-height: 1.65;
+  color: rgba(229, 237, 226, 0.88);
+  margin: 0 0 2rem 0;
+  font-weight: 400;
+}
+
+/* Tarjeta HUD Flotante de Muestra Real (Glass Editorial) */
+.ceres-hud-card {
+  background: rgba(22, 61, 43, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(229, 237, 226, 0.18);
+  border-radius: 16px;
+  padding: 1.15rem 1.35rem;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+}
+
+.ceres-hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  font-size: 0.76rem;
+  color: var(--ceres-sage);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.ceres-hud-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(57, 118, 75, 0.45);
+  border: 1px solid rgba(168, 190, 160, 0.35);
+  color: var(--ceres-ivory);
+  font-size: 0.72rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.ceres-hud-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(229, 237, 226, 0.12);
+}
+
+.ceres-hud-metric span {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--ceres-sage);
+  margin-bottom: 2px;
+}
+
+.ceres-hud-metric strong {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--ceres-ivory);
+}
+
+/* Pie del panel visual */
+.ceres-visual-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(229, 237, 226, 0.14);
+  font-size: 0.8rem;
+  color: var(--ceres-sage);
+}
+
+/* --------------------------------------------------------------------------
+   Panel Derecho: Formulario SaaS Refinado
+   -------------------------------------------------------------------------- */
+.ceres-form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 2.25rem;
+}
+
+.ceres-form-shell {
+  width: 100%;
+  max-width: 440px;
+  background: #FFFFFF;
+  border: 1px solid var(--ceres-border);
+  border-radius: 20px;
+  padding: 2.5rem 2.35rem;
+  box-shadow:
+    0 20px 45px rgba(22, 61, 43, 0.06),
+    0 2px 6px rgba(22, 61, 43, 0.03);
+}
+
+.ceres-form-container {
+  animation: ceresSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes ceresSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ceres-mobile-brand {
+  display: none;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1.5rem;
+}
+
+.ceres-mobile-brand .ceres-brand-mark {
+  background-color: var(--ceres-forest);
+  border-color: var(--ceres-forest);
+  color: var(--ceres-gold);
+}
+
+.ceres-mobile-brand .ceres-brand-name {
+  color: var(--ceres-forest);
+}
+
+/* Switch superior entre Iniciar Sesión y Crear Cuenta */
+.ceres-mode-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background-color: var(--ceres-ivory);
+  border: 1px solid var(--ceres-border);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 1.75rem;
+}
+
+.ceres-mode-btn {
+  border: none;
+  background: transparent;
+  padding: 0.55rem 0.75rem;
+  border-radius: 9px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--ceres-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ceres-mode-btn.active {
+  background-color: #FFFFFF;
+  color: var(--ceres-forest);
+  box-shadow: 0 2px 8px rgba(22, 61, 43, 0.08);
+}
+
+.ceres-form-header {
+  margin-bottom: 1.65rem;
+}
+
+.ceres-form-title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--ceres-forest);
+  margin: 0 0 0.35rem 0;
+}
+
+.ceres-form-subtitle {
+  font-size: 0.9rem;
+  color: var(--ceres-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Alertas */
+.ceres-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  margin-bottom: 1.25rem;
+}
+
+.ceres-banner svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ceres-banner.error {
+  background-color: var(--ceres-danger-bg);
+  border: 1px solid rgba(180, 60, 60, 0.22);
+  color: var(--ceres-danger);
+}
+
+.ceres-banner.success {
+  background-color: var(--ceres-success-bg);
+  border: 1px solid rgba(57, 118, 75, 0.25);
+  color: var(--ceres-forest);
+}
+
+/* Inputs con icono izquierdo */
+.ceres-field-group {
+  margin-bottom: 1.1rem;
+}
+
+.ceres-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ceres-charcoal);
+  margin-bottom: 0.4rem;
+}
+
+.ceres-match-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ceres-natural);
+}
+
+.ceres-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ceres-input-icon {
+  position: absolute;
+  left: 0.95rem;
+  color: #829187;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.ceres-input {
+  width: 100%;
+  height: 46px;
+  padding: 0 0.95rem 0 2.65rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  color: var(--ceres-charcoal);
+  background-color: var(--ceres-ivory);
+  border: 1.5px solid var(--ceres-border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.ceres-input::placeholder {
+  color: #97A49B;
+}
+
+.ceres-input:hover {
+  border-color: var(--ceres-sage);
+  background-color: #FFFFFF;
+}
+
+.ceres-input:focus {
+  background-color: #FFFFFF;
+  border-color: var(--ceres-natural);
+  box-shadow: 0 0 0 4px rgba(57, 118, 75, 0.12);
+}
+
+.ceres-input-wrapper:focus-within .ceres-input-icon {
+  color: var(--ceres-forest);
+}
+
+.ceres-input.has-toggle {
+  padding-right: 2.8rem;
+}
+
+.ceres-input.is-invalid {
+  border-color: var(--ceres-danger);
+  background-color: #FFFDFD;
+}
+
+.ceres-input.is-invalid:focus {
+  box-shadow: 0 0 0 4px rgba(180, 60, 60, 0.1);
+}
+
+.ceres-input-otp {
+  padding: 0 1rem;
+  text-align: center;
+  font-family: 'Manrope', monospace;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: 0.45em;
+  height: 52px;
+}
+
+.ceres-eye-btn {
+  position: absolute;
+  right: 0.7rem;
+  background: none;
+  border: none;
+  padding: 0.35rem;
+  color: var(--ceres-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.ceres-eye-btn:hover {
+  color: var(--ceres-forest);
+  background-color: var(--ceres-light);
+}
+
+.ceres-field-hint {
+  font-size: 0.77rem;
+  margin-top: 0.35rem;
+  color: var(--ceres-muted);
+}
+
+.ceres-field-hint.error {
+  color: var(--ceres-danger);
+}
+
+/* Medidor de seguridad de contraseña */
+.ceres-strength-wrapper {
+  margin-top: 0.55rem;
+  padding: 0.55rem 0.75rem;
+  background-color: var(--ceres-ivory);
+  border-radius: 10px;
+  border: 1px solid var(--ceres-light);
+}
+
+.ceres-strength-bars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-bottom: 0.35rem;
+}
+
+.ceres-strength-bar {
+  height: 4px;
+  border-radius: 4px;
+  background-color: #DCE5D9;
+  transition: background-color 0.25s ease;
+}
+
+.ceres-strength-bar.level-1 {
+  background-color: #C95B4B;
+}
+
+.ceres-strength-bar.level-2 {
+  background-color: var(--ceres-gold);
+}
+
+.ceres-strength-bar.level-3 {
+  background-color: var(--ceres-natural);
+}
+
+.ceres-strength-bar.level-4 {
+  background-color: var(--ceres-forest);
+}
+
+.ceres-strength-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--ceres-muted);
+}
+
+/* Opciones */
+.ceres-form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.25rem 0 1.45rem 0;
+}
+
+.ceres-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.84rem;
+  color: var(--ceres-charcoal);
+  cursor: pointer;
+  user-select: none;
+}
+
+.ceres-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--ceres-forest);
+  cursor: pointer;
+}
+
+/* Botón Principal */
+.ceres-btn-primary {
+  width: 100%;
+  height: 48px;
+  background-color: var(--ceres-forest);
+  color: var(--ceres-ivory);
+  border: none;
+  border-radius: 12px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.94rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  box-shadow: 0 8px 20px rgba(22, 61, 43, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ceres-btn-primary:hover:not(:disabled) {
+  background-color: var(--ceres-natural);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(22, 61, 43, 0.26);
+}
+
+.ceres-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ceres-btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(57, 118, 75, 0.25);
+}
+
+.ceres-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Pie de cambio */
+.ceres-auth-switch {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ceres-light);
+  text-align: center;
+  font-size: 0.86rem;
+  color: var(--ceres-muted);
+}
+
+.ceres-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ceres-natural);
+  cursor: pointer;
+  border-bottom: 1.5px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.ceres-link-btn:hover {
+  color: var(--ceres-forest);
+  border-bottom-color: var(--ceres-gold);
+}
+
+.ceres-otp-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.15rem;
+}
+
+.ceres-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(248, 248, 243, 0.35);
+  border-top-color: var(--ceres-ivory);
+  border-radius: 50%;
+  animation: ceresSpin 0.7s linear infinite;
+}
+
+@keyframes ceresSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 980px) {
+  .ceres-auth-page {
+    grid-template-columns: 1fr;
+  }
+
+  .ceres-visual-panel {
+    display: none;
+  }
+
+  .ceres-mobile-brand {
+    display: inline-flex;
+  }
+
+  .ceres-form-panel {
+    padding: 1.5rem 1rem;
+  }
+
+  .ceres-form-shell {
+    padding: 2rem 1.5rem;
+  }
+}

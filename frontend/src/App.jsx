@@ -4,6 +4,7 @@ import HistorialAnalisis from './components/HistorialAnalisis';
 import ListaPlantas from './components/ListaPlantas';
 import CompatibilidadZona from './components/CompatibilidadZona';
 import AuthForm from './components/AuthForm';
+import PerfilUsuario from './components/PerfilUsuario';
 
 function App() {
     const [usuario, setUsuario] = useState(null);
@@ -11,18 +12,22 @@ function App() {
     const [recargar, setRecargar] = useState(0);
 
     useEffect(() => {
-        const usuarioGuardado = localStorage.getItem('ceresia_usuario');
-        if (usuarioGuardado) {
-            setUsuario(JSON.parse(usuarioGuardado));
-        }
-    }, []);
+    const usuarioGuardado =
+        localStorage.getItem('ceresia_usuario') ||
+        sessionStorage.getItem('ceresia_usuario');
+    if (usuarioGuardado) {
+        setUsuario(JSON.parse(usuarioGuardado));
+    }
+}, []);
 
     const handleLogout = () => {
-        localStorage.removeItem('ceresia_token');
-        localStorage.removeItem('ceresia_usuario');
-        setUsuario(null);
-        setVistaActual('inicio');
-    };
+    localStorage.removeItem('ceresia_token');
+    localStorage.removeItem('ceresia_usuario');
+    sessionStorage.removeItem('ceresia_token');
+    sessionStorage.removeItem('ceresia_usuario');
+    setUsuario(null);
+    setVistaActual('inicio');
+};
 
     if (!usuario) {
         return <AuthForm onLoginSuccess={(user) => setUsuario(user)} />;
@@ -38,8 +43,14 @@ function App() {
                 >
                     🌿 CeresIA
                 </span>
-                <div className="d-flex align-items-center text-white">
-                    <span className="me-3 small d-none d-sm-inline">Hola, <strong>{usuario.nombre}</strong></span>
+                <div className="d-flex align-items-center text-white gap-2">
+                    <span className="me-2 small d-none d-sm-inline">Hola, <strong>{usuario.nombre}</strong></span>
+                    <button 
+                        onClick={() => setVistaActual('perfil')} 
+                        className="btn btn-light btn-sm fw-semibold text-success"
+                    >
+                        ⚙️ Perfil
+                    </button>
                     <button onClick={handleLogout} className="btn btn-outline-light btn-sm">
                         Salir
                     </button>
@@ -162,6 +173,14 @@ function App() {
                         </button>
                         <ListaPlantas recargar={recargar} />
                     </div>
+                )}
+
+                {vistaActual === 'perfil' && (
+                    <PerfilUsuario
+                        usuario={usuario}
+                        onUsuarioActualizado={(userActualizado) => setUsuario(userActualizado)}
+                        onVolver={() => setVistaActual('inicio')}
+                    />
                 )}
             </div>
         </div>
