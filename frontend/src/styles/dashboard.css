@@ -1,0 +1,1384 @@
+/* ==========================================================================
+   CERES IA — Arquitectura Visual SaaS (Nivel Comercial)
+   ========================================================================== */
+
+.ceres-app-shell {
+  min-height: 100vh;
+  display: flex;
+  background-color: var(--ceres-ivory);
+  background-image: radial-gradient(rgba(22, 61, 43, 0.035) 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: var(--ceres-charcoal);
+}
+
+/* --------------------------------------------------------------------------
+   1. Sidebar de Navegación Persistente
+   -------------------------------------------------------------------------- */
+.ceres-sidebar {
+  width: 264px;
+  flex-shrink: 0;
+  background-color: var(--ceres-forest);
+  color: var(--ceres-ivory);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.75rem 1.15rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  border-right: 1px solid rgba(229, 237, 226, 0.08);
+  z-index: 40;
+}
+
+.ceres-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0 0.5rem 1.5rem;
+  border-bottom: 1px solid rgba(229, 237, 226, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.ceres-logo-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: rgba(248, 248, 243, 0.08);
+  border: 1px solid rgba(198, 166, 106, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ceres-gold);
+  flex-shrink: 0;
+}
+
+.ceres-logo-text {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--ceres-ivory);
+  line-height: 1.1;
+}
+
+.ceres-logo-sub {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ceres-sage);
+  margin-top: 2px;
+}
+
+.ceres-nav-section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(168, 190, 160, 0.65);
+  padding: 0 0.85rem;
+  margin-bottom: 0.55rem;
+}
+
+.ceres-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ceres-nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.72rem 0.95rem;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: rgba(229, 237, 226, 0.8);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.ceres-nav-btn-left {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.ceres-nav-btn:hover {
+  background: rgba(248, 248, 243, 0.07);
+  color: #FFFFFF;
+}
+
+.ceres-nav-btn.active {
+  background-color: var(--ceres-ivory);
+  color: var(--ceres-forest);
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.ceres-nav-badge {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(248, 248, 243, 0.12);
+  color: var(--ceres-gold);
+}
+
+.ceres-nav-btn.active .ceres-nav-badge {
+  background: var(--ceres-light);
+  color: var(--ceres-forest);
+}
+
+/* Pie del Sidebar */
+.ceres-sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(229, 237, 226, 0.1);
+}
+
+.ceres-engine-status {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  background: rgba(248, 248, 243, 0.05);
+  border: 1px solid rgba(229, 237, 226, 0.1);
+  font-size: 0.78rem;
+  color: var(--ceres-light);
+}
+
+.ceres-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #4ADE80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2);
+  flex-shrink: 0;
+}
+
+.ceres-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  border-radius: 11px;
+  background: transparent;
+  border: 1px solid rgba(229, 237, 226, 0.18);
+  color: var(--ceres-light);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ceres-logout-btn:hover {
+  background: rgba(180, 60, 60, 0.22);
+  border-color: rgba(235, 110, 110, 0.45);
+  color: #FFFFFF;
+}
+
+/* --------------------------------------------------------------------------
+   2. Contenedor Principal y Topbar Funcional
+   -------------------------------------------------------------------------- */
+.ceres-workspace {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ceres-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  background: rgba(248, 248, 243, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--ceres-border);
+  padding: 1rem 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ceres-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.ceres-breadcrumb-root {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ceres-muted);
+  cursor: pointer;
+}
+
+.ceres-breadcrumb-root:hover {
+  color: var(--ceres-forest);
+}
+
+.ceres-breadcrumb-current {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ceres-forest);
+}
+
+.ceres-topbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ceres-chip-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 38px;
+  padding: 0 0.9rem;
+  border-radius: 10px;
+  background: #FFFFFF;
+  border: 1px solid var(--ceres-border);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ceres-charcoal);
+  box-shadow: 0 1px 3px rgba(22, 61, 43, 0.04);
+}
+
+.ceres-chip-control svg {
+  color: var(--ceres-natural);
+}
+
+.ceres-chip-select {
+  border: none;
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ceres-forest);
+  outline: none;
+  cursor: pointer;
+}
+
+.ceres-user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 38px;
+  padding: 0 0.85rem 0 0.35rem;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 1px solid var(--ceres-border);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.ceres-user-pill:hover {
+  border-color: var(--ceres-natural);
+}
+
+.ceres-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ceres-forest);
+  color: var(--ceres-ivory);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ceres-content-container {
+  padding: 1.85rem 2.25rem 3rem;
+  max-width: 1360px;
+  width: 100%;
+  margin: 0 auto;
+  animation: ceresViewFade 0.26s ease-out;
+}
+
+@keyframes ceresViewFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. Vista Inicio: Hero Editorial + Bento Grid + Telemetría
+   -------------------------------------------------------------------------- */
+.ceres-hero-card {
+  position: relative;
+  border-radius: 20px;
+  padding: 2.35rem 2.75rem;
+  margin-bottom: 1.75rem;
+  background-image:
+    linear-gradient(96deg, rgba(22, 61, 43, 0.96) 0%, rgba(22, 61, 43, 0.84) 50%, rgba(22, 61, 43, 0.35) 100%),
+    url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1600&q=85');
+  background-size: cover;
+  background-position: center;
+  color: var(--ceres-ivory);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  overflow: hidden;
+  border: 1px solid rgba(22, 61, 43, 0.2);
+  box-shadow: 0 18px 40px rgba(22, 61, 43, 0.12);
+}
+
+.ceres-hero-left {
+  max-width: 560px;
+  position: relative;
+  z-index: 2;
+}
+
+.ceres-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(248, 248, 243, 0.1);
+  border: 1px solid rgba(198, 166, 106, 0.45);
+  color: var(--ceres-gold);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.ceres-hero-heading {
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(1.65rem, 2.5vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.16;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  margin: 0 0 0.75rem 0;
+}
+
+.ceres-hero-lead {
+  font-size: 0.93rem;
+  line-height: 1.6;
+  color: rgba(229, 237, 226, 0.9);
+  margin: 0 0 1.5rem 0;
+}
+
+.ceres-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.ceres-btn-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 44px;
+  padding: 0 1.35rem;
+  border-radius: 11px;
+  border: none;
+  background-color: var(--ceres-ivory);
+  color: var(--ceres-forest);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.ceres-btn-cta-primary:hover {
+  background-color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.ceres-btn-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  height: 44px;
+  padding: 0 1.2rem;
+  border-radius: 11px;
+  border: 1px solid rgba(229, 237, 226, 0.32);
+  background: rgba(22, 61, 43, 0.45);
+  backdrop-filter: blur(8px);
+  color: var(--ceres-ivory);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ceres-btn-cta-secondary:hover {
+  background: rgba(248, 248, 243, 0.14);
+  border-color: var(--ceres-ivory);
+}
+
+/* Tarjeta flotante derecha dentro del Hero */
+.ceres-hero-telemetry-card {
+  position: relative;
+  z-index: 2;
+  min-width: 260px;
+  background: rgba(22, 61, 43, 0.62);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(229, 237, 226, 0.2);
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+}
+
+.ceres-hero-temp-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+}
+
+.ceres-hero-temp {
+  font-family: 'Manrope', sans-serif;
+  font-size: 2.15rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.ceres-hero-weather-tag {
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(198, 166, 106, 0.2);
+  border: 1px solid rgba(198, 166, 106, 0.45);
+  color: var(--ceres-gold);
+}
+
+.ceres-hero-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(229, 237, 226, 0.14);
+  font-size: 0.8rem;
+  color: var(--ceres-light);
+}
+
+.ceres-hero-meta-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Grid de 4 Módulos Comerciales */
+.ceres-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.ceres-module-card {
+  background: #FFFFFF;
+  border: 1px solid var(--ceres-border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(22, 61, 43, 0.04);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.ceres-module-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--ceres-natural);
+  box-shadow: 0 14px 30px rgba(22, 61, 43, 0.1);
+}
+
+.ceres-module-top {
+  padding: 1.35rem 1.35rem 1rem;
+}
+
+.ceres-module-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background-color: var(--ceres-light);
+  color: var(--ceres-forest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.ceres-module-card:hover .ceres-module-icon {
+  background-color: var(--ceres-forest);
+  color: var(--ceres-ivory);
+}
+
+.ceres-module-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--ceres-charcoal);
+  margin: 0 0 0.4rem 0;
+}
+
+.ceres-module-desc {
+  font-size: 0.83rem;
+  line-height: 1.5;
+  color: var(--ceres-muted);
+  margin: 0;
+}
+
+.ceres-module-media {
+  position: relative;
+  height: 74px;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+}
+
+.ceres-module-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.25) 100%);
+}
+
+.ceres-module-action-label {
+  position: relative;
+  z-index: 2;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ceres-forest);
+}
+
+.ceres-module-arrow {
+  position: relative;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--ceres-forest);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.ceres-module-card:hover .ceres-module-arrow {
+  background-color: var(--ceres-natural);
+  transform: translateX(3px);
+}
+
+/* KPI Strip Inferior */
+.ceres-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.ceres-kpi-card {
+  background: #FFFFFF;
+  border: 1px solid var(--ceres-border);
+  border-radius: 16px;
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 16px rgba(22, 61, 43, 0.03);
+}
+
+.ceres-kpi-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--ceres-ivory);
+  border: 1px solid var(--ceres-light);
+  color: var(--ceres-forest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ceres-kpi-label {
+  font-size: 0.77rem;
+  font-weight: 600;
+  color: var(--ceres-muted);
+  display: block;
+}
+
+.ceres-kpi-value {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--ceres-charcoal);
+  line-height: 1.2;
+}
+
+.ceres-kpi-trend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ceres-natural);
+  display: block;
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   4. Contenedores Unificados para Subvistas Internas
+   -------------------------------------------------------------------------- */
+.ceres-surface-card {
+  background: #FFFFFF;
+  border: 1px solid var(--ceres-border);
+  border-radius: 18px;
+  padding: 1.75rem;
+  box-shadow: 0 8px 24px rgba(22, 61, 43, 0.04);
+}
+
+.ceres-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.ceres-section-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--ceres-forest);
+  margin: 0 0 0.25rem 0;
+}
+
+.ceres-section-subtitle {
+  font-size: 0.88rem;
+  color: var(--ceres-muted);
+  margin: 0;
+}
+
+.ceres-btn-forest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 42px;
+  padding: 0 1.25rem;
+  border-radius: 10px;
+  border: none;
+  background-color: var(--ceres-forest);
+  color: var(--ceres-ivory);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ceres-btn-forest:hover:not(:disabled) {
+  background-color: var(--ceres-natural);
+}
+
+.ceres-btn-forest:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ceres-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 40px;
+  padding: 0 1.05rem;
+  border-radius: 10px;
+  border: 1px solid var(--ceres-border);
+  background-color: #FFFFFF;
+  color: var(--ceres-charcoal);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ceres-btn-outline:hover {
+  border-color: var(--ceres-natural);
+  background-color: var(--ceres-ivory);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 1150px) {
+  .ceres-modules-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .ceres-app-shell {
+    flex-direction: column;
+  }
+
+  .ceres-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    padding: 0.95rem 1.15rem;
+  }
+
+  .ceres-sidebar-header,
+  .ceres-nav-section-label,
+  .ceres-engine-status {
+    display: none;
+  }
+
+  .ceres-nav-group {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .ceres-nav-btn {
+    width: auto;
+    white-space: nowrap;
+    padding: 0.55rem 0.9rem;
+  }
+
+  .ceres-sidebar-bottom {
+    display: none;
+  }
+
+  .ceres-topbar,
+  .ceres-content-container {
+    padding-left: 1.15rem;
+    padding-right: 1.15rem;
+  }
+
+  .ceres-hero-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.75rem 1.5rem;
+  }
+
+  .ceres-hero-telemetry-card {
+    width: 100%;
+  }
+
+  .ceres-modules-grid,
+  .ceres-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* ==========================================================================
+   5. Módulos Internos: Escáner Visual y Compatibilidad de Zona
+   ========================================================================== */
+
+.ceres-split-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Zona Drag & Drop de Captura Botánica */
+.ceres-dropzone {
+  position: relative;
+  border: 2px dashed var(--ceres-sage);
+  border-radius: 16px;
+  background-color: var(--ceres-ivory);
+  min-height: 290px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.ceres-dropzone:hover,
+.ceres-dropzone.dragging {
+  border-color: var(--ceres-forest);
+  background-color: var(--ceres-light);
+}
+
+.ceres-dropzone.has-image {
+  padding: 0;
+  border-style: solid;
+  border-color: var(--ceres-border);
+  background-color: #102D20;
+}
+
+.ceres-preview-img {
+  width: 100%;
+  height: 310px;
+  object-fit: cover;
+  display: block;
+}
+
+.ceres-preview-overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 0.85rem 1.1rem;
+  background: linear-gradient(0deg, rgba(16, 45, 32, 0.92) 0%, rgba(16, 45, 32, 0) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #FFFFFF;
+}
+
+.ceres-dropzone-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid var(--ceres-border);
+  color: var(--ceres-forest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.95rem;
+  box-shadow: 0 4px 12px rgba(22, 61, 43, 0.06);
+}
+
+/* Barra de escaneo animada durante el análisis IA */
+.ceres-scan-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #4ADE80, #FFFFFF, #4ADE80, transparent);
+  box-shadow: 0 0 14px #4ADE80;
+  animation: ceresScanMove 1.8s ease-in-out infinite;
+  z-index: 5;
+}
+
+@keyframes ceresScanMove {
+  0% { top: 6%; }
+  50% { top: 92%; }
+  100% { top: 6%; }
+}
+
+/* Controles de Formulario Internos */
+.ceres-form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  margin-top: 1.15rem;
+}
+
+.ceres-field-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ceres-charcoal);
+  margin-bottom: 0.4rem;
+}
+
+.ceres-select-box,
+.ceres-input-box {
+  width: 100%;
+  height: 42px;
+  padding: 0 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--ceres-border);
+  background-color: var(--ceres-ivory);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--ceres-charcoal);
+  outline: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.ceres-select-box:focus,
+.ceres-input-box:focus {
+  border-color: var(--ceres-forest);
+  background-color: #FFFFFF;
+}
+
+/* Ficha Clínica de Diagnóstico */
+.ceres-report-empty {
+  border: 1px dashed var(--ceres-border);
+  border-radius: 18px;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.ceres-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.ceres-status-pill.apto {
+  background-color: #E5EDE2;
+  color: #163D2B;
+  border: 1px solid #A8BEA0;
+}
+
+.ceres-status-pill.alerta {
+  background-color: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #F59E0B;
+}
+
+.ceres-report-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+  margin: 1.25rem 0;
+}
+
+.ceres-report-metric {
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background-color: var(--ceres-ivory);
+  border: 1px solid var(--ceres-border);
+}
+
+.ceres-report-block {
+  padding: 1.1rem 1.2rem;
+  border-radius: 14px;
+  background-color: var(--ceres-ivory);
+  border-left: 3px solid var(--ceres-forest);
+  margin-bottom: 0.9rem;
+}
+
+.ceres-report-block h4 {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--ceres-forest);
+  margin: 0 0 0.45rem 0;
+}
+
+.ceres-report-block p {
+  font-size: 0.86rem;
+  line-height: 1.58;
+  color: var(--ceres-charcoal);
+  margin: 0;
+  white-space: pre-line;
+}
+
+/* Compatibilidad de Zona: Banner Climático + Tarjetas de Cultivos */
+.ceres-weather-banner {
+  background: linear-gradient(125deg, var(--ceres-forest) 0%, #24543B 100%);
+  color: var(--ceres-ivory);
+  border-radius: 18px;
+  padding: 1.5rem 1.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 12px 28px rgba(22, 61, 43, 0.14);
+}
+
+.ceres-weather-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.ceres-weather-stat-box {
+  padding: 0.65rem 1rem;
+  border-radius: 12px;
+  background: rgba(248, 248, 243, 0.1);
+  border: 1px solid rgba(229, 237, 226, 0.16);
+}
+
+.ceres-crops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 1.2rem;
+}
+
+.ceres-crop-card {
+  background: #FFFFFF;
+  border: 1px solid var(--ceres-border);
+  border-radius: 16px;
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 6px 18px rgba(22, 61, 43, 0.04);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.ceres-crop-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--ceres-natural);
+}
+
+.ceres-progress-track {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background-color: var(--ceres-light);
+  overflow: hidden;
+  margin: 0.65rem 0 0.85rem;
+}
+
+.ceres-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--ceres-natural), var(--ceres-forest));
+}
+
+.ceres-alert-banner {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background-color: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 960px) {
+  .ceres-split-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .ceres-form-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+/* ==========================================================================
+   6. Módulos Internos: Historial, Catálogo Botánico y Perfil
+   ========================================================================== */
+
+.ceres-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 1.35rem;
+  flex-wrap: wrap;
+}
+
+.ceres-search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+  max-width: 420px;
+}
+
+.ceres-search-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ceres-muted);
+  display: flex;
+  pointer-events: none;
+}
+
+.ceres-search-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 1rem 0 2.55rem;
+  border-radius: 11px;
+  border: 1px solid var(--ceres-border);
+  background-color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.86rem;
+  color: var(--ceres-charcoal);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ceres-search-input:focus {
+  border-color: var(--ceres-forest);
+  box-shadow: 0 0 0 3px rgba(22, 61, 43, 0.08);
+}
+
+.ceres-filter-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 4px;
+  border-radius: 11px;
+  background-color: var(--ceres-light);
+  border: 1px solid var(--ceres-border);
+}
+
+.ceres-filter-pill {
+  border: none;
+  background: transparent;
+  padding: 0.42rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ceres-muted);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.ceres-filter-pill.active {
+  background-color: #FFFFFF;
+  color: var(--ceres-forest);
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(22, 61, 43, 0.08);
+}
+
+/* Lista Cronológica de Historial */
+.ceres-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.ceres-history-card {
+  background: #FFFFFF;
+  border: 1px solid var(--ceres-border);
+  border-radius: 16px;
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  box-shadow: 0 4px 14px rgba(22, 61, 43, 0.03);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.ceres-history-card:hover {
+  border-color: var(--ceres-natural);
+  transform: translateY(-2px);
+}
+
+.ceres-history-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  background-color: var(--ceres-light);
+  border: 1px solid var(--ceres-border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ceres-forest);
+}
+
+/* Catálogo Botánico */
+.ceres-plant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.ceres-plant-card {
+  background: #FFFFFF;
+  border: 1px solid var(--ceres-border);
+  border-radius: 18px;
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 6px 18px rgba(22, 61, 43, 0.04);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.ceres-plant-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--ceres-natural);
+}
+
+.ceres-spec-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.ceres-spec-tag {
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.28rem 0.65rem;
+  border-radius: 8px;
+  background-color: var(--ceres-ivory);
+  border: 1px solid var(--ceres-border);
+  color: var(--ceres-charcoal);
+}
+
+/* Perfil de Usuario */
+.ceres-profile-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.ceres-profile-banner-card {
+  background: linear-gradient(160deg, var(--ceres-forest) 0%, #102D20 100%);
+  color: var(--ceres-ivory);
+  border-radius: 18px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 12px 28px rgba(22, 61, 43, 0.14);
+}
+
+.ceres-profile-avatar-lg {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: rgba(248, 248, 243, 0.12);
+  border: 2px solid var(--ceres-gold);
+  color: #FFFFFF;
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.65rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.ceres-success-banner {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background-color: #E5EDE2;
+  border: 1px solid #A8BEA0;
+  color: #163D2B;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 880px) {
+  .ceres-profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ceres-history-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+/* ==========================================================================
+   7. Adaptación Híbrida Móvil (App Nativa + Web Responsiva)
+   ========================================================================== */
+
+.ceres-mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ceres-sidebar {
+    display: none !important;
+  }
+
+  .ceres-content-container {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .ceres-mobile-bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: center;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--ceres-border);
+    padding: 0.45rem 0.25rem calc(0.45rem + env(safe-area-inset-bottom));
+    box-shadow: 0 -6px 20px rgba(22, 61, 43, 0.08);
+  }
+
+  .ceres-bottom-tab {
+    border: none;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--ceres-muted);
+    padding: 4px 2px;
+    cursor: pointer;
+    min-height: 46px;
+  }
+
+  .ceres-bottom-tab.active {
+    color: var(--ceres-forest);
+    font-weight: 800;
+  }
+
+  .ceres-bottom-tab-scan {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    background: var(--ceres-forest);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -18px;
+    box-shadow: 0 8px 18px rgba(22, 61, 43, 0.28);
+    border: 3px solid #FFFFFF;
+  }
+
+  .ceres-btn-forest,
+  .ceres-btn-outline,
+  .ceres-select-box,
+  .ceres-input-box {
+    min-height: 46px;
+    font-size: 0.92rem;
+  }
+}

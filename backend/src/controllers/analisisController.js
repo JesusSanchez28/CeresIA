@@ -151,12 +151,13 @@ const obtenerHistorial = (req, res) => {
 const cacheCompatibilidad = new Map();
 
 const obtenerCompatibilidadZona = async (req, res) => {
-    const { lat, lon } = req.query;
+    const { lat, lon, suelo } = req.query;
     if (!lat || !lon) {
         return res.status(400).json({ error: 'Se requieren latitud y longitud.' });
     }
 
-    const cacheKey = `${Number(lat).toFixed(2)}_${Number(lon).toFixed(2)}`;
+    const sueloEval = (suelo || 'Franco arcilloso').trim();
+    const cacheKey = `${Number(lat).toFixed(2)}_${Number(lon).toFixed(2)}_${sueloEval.toLowerCase()}`;
     const cached = cacheCompatibilidad.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp < 30 * 60 * 1000)) {
         return res.json(cached.data);
@@ -165,7 +166,7 @@ const obtenerCompatibilidadZona = async (req, res) => {
     try {
         const clima = await obtenerClimaPorCoordenadas(lat, lon);
         const recomendaciones = await recomendarCultivosPorClima(
-            clima.ubicacion || `${lat}, ${lon}`,
+            `${clima.ubicacion || `${lat}, ${lon}`} (Suelo: ${sueloEval})`,
             clima.temperatura,
             clima.humedad
         );
@@ -179,10 +180,27 @@ const obtenerCompatibilidadZona = async (req, res) => {
         res.status(500).json({ error: error.message || 'No se pudo generar la recomendación agroclimática.' });
     }
 };
+const eliminarAnalisis = (req, res) => {
+    const { id } = req.params;
+    if (!id) {
+        return res.status(400).json({ error: 'Se requiere el ID del análisis.' });
+    }
 
+    db.query('DELETE FROM analisis_completo WHERE id_analisis_completo = ?', [id], (err, result) => {
+        if (err) {
+            console.error('Error al eliminar análisis:', err);
+            return res.status(500).json({ error: 'No se pudo eliminar el registro de la base de datos.' });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'El análisis no existe o ya fue eliminado.' });
+        }
+        res.json({ mensaje: 'Análisis eliminado correctamente.' });
+    });
+};
 module.exports = { 
     obtenerClima,
     registrarAnalisis, 
     obtenerHistorial, 
-    obtenerCompatibilidadZona 
+    obtenerCompatibilidadZona,
+    eliminarAnalisis
 };

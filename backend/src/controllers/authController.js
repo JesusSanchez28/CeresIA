@@ -2,17 +2,18 @@ const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { enviarCodigoVerificacion } = require('../services/emailService');
-
+const { OAuth2Client } = require('google-auth-library');
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_SECRET = (process.env.JWT_SECRET || 'ceresia_clave_secreta_2026').trim();
 
 const generarCodigoOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 // 1. Registrar nuevo usuario y enviar código OTP
 const registrarUsuario = async (req, res) => {
-    const { nombre, correo, password, rol } = req.body;
+    const { nombre, correo, password, rol, suelo_preferido } = req.body;
 
     if (!nombre || !correo || !password) {
-        return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+        return res.status(400).json({ error: 'Todos los campos obligatorios deben completarse.' });
     }
 
     const correoLimpio = correo.trim().toLowerCase();
@@ -33,23 +34,34 @@ const registrarUsuario = async (req, res) => {
             const passwordHash = await bcrypt.hash(password, salt);
 
             const insertQuery = `
-                INSERT INTO usuario (nombre, correo, password, rol, verificado, codigo_verificacion) 
-                VALUES (?, ?, ?, ?, 0, ?)
+                INSERT INTO usuario (nombre, correo, password, rol, suelo_preferido, verificado, codigo_verificacion) 
+                VALUES (?, ?, ?, ?, ?, 0, ?)
             `;
-            db.query(insertQuery, [nombre.trim(), correoLimpio, passwordHash, rol || 'Agricultor', codigoOTP], async (errInsert) => {
-                if (errInsert) {
-                    console.error('❌ Error SQL al insertar usuario:', errInsert);
-                    return res.status(500).json({ error: 'No se pudo crear el usuario.' });
+            db.query(
+                insertQuery,
+                [
+                    nombre.trim(),
+                    correoLimpio,
+                    passwordHash,
+                    rol || 'Agricultor',
+                    suelo_preferido || 'Franco arcilloso',
+                    codigoOTP
+                ],
+                async (errInsert) => {
+                    if (errInsert) {
+                        console.error('❌ Error SQL al insertar usuario:', errInsert);
+                        return res.status(500).json({ error: 'No se pudo crear el usuario.' });
+                    }
+
+                    await enviarCodigoVerificacion(correoLimpio, nombre.trim(), codigoOTP);
+
+                    res.status(201).json({
+                        requiereVerificacion: true,
+                        correo: correoLimpio,
+                        mensaje: 'Cuenta creada. Revisa tu correo e ingresa el código de 6 dígitos.'
+                    });
                 }
-
-                await enviarCodigoVerificacion(correoLimpio, nombre.trim(), codigoOTP);
-
-                res.status(201).json({
-                    requiereVerificacion: true,
-                    correo: correoLimpio,
-                    mensaje: 'Cuenta creada. Revisa tu correo e ingresa el código de 6 dígitos.'
-                });
-            });
+            );
         });
     } catch (error) {
         console.error('❌ Error interno en registro:', error);
@@ -91,7 +103,7 @@ const verificarCorreo = (req, res) => {
             );
 
             res.json({
-                mensaje: '✅ ¡Correo verificado exitosamente!',
+                mensaje: 'Correo verificado exitosamente.',
                 token,
                 usuario: {
                     id_usuario: usuario.id_usuario,
@@ -127,7 +139,7 @@ const reenviarCodigo = (req, res) => {
     });
 };
 
-// 4. Iniciar sesión (bloquea si no está verificado y reenvía código)
+// 4. Iniciar sesión
 const loginUsuario = (req, res) => {
     const { correo, password } = req.body;
 
@@ -167,7 +179,7 @@ const loginUsuario = (req, res) => {
         );
 
         res.json({
-            mensaje: `¡Bienvenido, ${usuario.nombre}!`,
+            mensaje: `Bienvenido, ${usuario.nombre}`,
             token,
             usuario: {
                 id_usuario: usuario.id_usuario,
@@ -181,7 +193,74 @@ const loginUsuario = (req, res) => {
     });
 };
 
-// 5. Actualizar perfil y preferencias del usuario
+// 5. Solicitar recuperación de contraseña (envía OTP al correo)
+const solicitarRecuperacion = (req, res) => {
+    const { correo } = req.body;
+    if (!correo) return res.status(400).json({ error: 'Ingresa tu correo electrónico.' });
+
+    const correoLimpio = correo.trim().toLowerCase();
+    const codigoOTP = generarCodigoOTP();
+
+    db.query('SELECT id_usuario, nombre FROM usuario WHERE correo = ?', [correoLimpio], (err, results) => {
+        if (err) return res.status(500).json({ error: 'Error en la base de datos.' });
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'No existe una cuenta asociada a este correo.' });
+        }
+
+        const usuario = results[0];
+        db.query('UPDATE usuario SET codigo_verificacion = ? WHERE id_usuario = ?', [codigoOTP, usuario.id_usuario], async (errUpd) => {
+            if (errUpd) return res.status(500).json({ error: 'No se pudo procesar la solicitud.' });
+
+            await enviarCodigoVerificacion(correoLimpio, usuario.nombre, codigoOTP);
+            res.json({
+                mensaje: 'Enviamos un código de recuperación de 6 dígitos a tu correo.'
+            });
+        });
+    });
+};
+
+// 6. Restablecer contraseña con código OTP
+const restablecerPassword = (req, res) => {
+    const { correo, codigo, nuevaPassword } = req.body;
+
+    if (!correo || !codigo || !nuevaPassword) {
+        return res.status(400).json({ error: 'Completa todos los campos requeridos.' });
+    }
+
+    if (nuevaPassword.length < 6) {
+        return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 6 caracteres.' });
+    }
+
+    const correoLimpio = correo.trim().toLowerCase();
+
+    db.query('SELECT id_usuario, codigo_verificacion FROM usuario WHERE correo = ?', [correoLimpio], async (err, results) => {
+        if (err) return res.status(500).json({ error: 'Error en la base de datos.' });
+        if (results.length === 0) return res.status(404).json({ error: 'Usuario no encontrado.' });
+
+        const usuario = results[0];
+
+        if (!usuario.codigo_verificacion || usuario.codigo_verificacion !== codigo.trim()) {
+            return res.status(400).json({ error: 'El código de recuperación es incorrecto o ya expiró.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(nuevaPassword, salt);
+
+        db.query(
+            'UPDATE usuario SET password = ?, codigo_verificacion = NULL, verificado = 1 WHERE id_usuario = ?',
+            [passwordHash, usuario.id_usuario],
+            (errUpd) => {
+                if (errUpd) return res.status(500).json({ error: 'No se pudo actualizar la contraseña.' });
+
+                res.json({
+                    mensaje: 'Contraseña restablecida correctamente. Ya puedes iniciar sesión.'
+                });
+            }
+        );
+    });
+};
+
+// 7. Actualizar perfil y preferencias del usuario
 const actualizarPerfil = (req, res) => {
     const { id_usuario, nombre, suelo_preferido } = req.body;
 
@@ -200,14 +279,14 @@ const actualizarPerfil = (req, res) => {
             if (errSel || rows.length === 0) return res.status(500).json({ error: 'Perfil actualizado, recarga la sesión.' });
 
             res.json({
-                mensaje: '✅ Configuración actualizada correctamente.',
+                mensaje: 'Configuración actualizada correctamente.',
                 usuario: rows[0]
             });
         });
     });
 };
 
-// 6. Cambiar contraseña del usuario
+// 8. Cambiar contraseña desde el perfil
 const cambiarPassword = (req, res) => {
     const { id_usuario, passwordActual, passwordNueva } = req.body;
 
@@ -232,9 +311,104 @@ const cambiarPassword = (req, res) => {
 
         db.query('UPDATE usuario SET password = ? WHERE id_usuario = ?', [nuevoHash, id_usuario], (errUpd) => {
             if (errUpd) return res.status(500).json({ error: 'Error al guardar la nueva contraseña.' });
-            res.json({ mensaje: '🔒 Contraseña actualizada con éxito.' });
+            res.json({ mensaje: 'Contraseña actualizada con éxito.' });
         });
     });
+};
+
+// 9. Iniciar sesión o registrarse automáticamente con Google OAuth 2.0
+const loginConGoogle = async (req, res) => {
+    const { credential, rol, suelo_preferido } = req.body;
+
+    if (!credential) {
+        return res.status(400).json({ error: 'Token de Google no recibido.' });
+    }
+
+    try {
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+
+        const payload = ticket.getPayload();
+        const correoLimpio = payload.email.trim().toLowerCase();
+        const nombreGoogle = payload.name || correoLimpio.split('@')[0];
+
+        db.query('SELECT * FROM usuario WHERE correo = ?', [correoLimpio], async (err, results) => {
+            if (err) {
+                console.error('Error SQL en Google Auth:', err);
+                return res.status(500).json({ error: 'Error en la base de datos.' });
+            }
+
+            // Si el usuario ya existe (local o previo con Google), lo marca verificado y entrega JWT
+            if (results.length > 0) {
+                const usuario = results[0];
+                if (usuario.verificado === 0) {
+                    db.query('UPDATE usuario SET verificado = 1, codigo_verificacion = NULL WHERE id_usuario = ?', [usuario.id_usuario]);
+                }
+
+                const token = jwt.sign(
+                    { id_usuario: usuario.id_usuario, nombre: usuario.nombre, correo: usuario.correo, rol: usuario.rol },
+                    JWT_SECRET,
+                    { expiresIn: '24h' }
+                );
+
+                return res.json({
+                    mensaje: `Bienvenido de nuevo, ${usuario.nombre}`,
+                    token,
+                    usuario: {
+                        id_usuario: usuario.id_usuario,
+                        nombre: usuario.nombre,
+                        correo: usuario.correo,
+                        rol: usuario.rol,
+                        suelo_preferido: usuario.suelo_preferido || 'Franco arcilloso',
+                        verificado: 1
+                    }
+                });
+            }
+
+            // Si es usuario nuevo, crea una contraseña aleatoria segura (no usada para login Google) y registra directo como verificado
+            const randomSecret = await bcrypt.hash(`${payload.sub}_${Date.now()}`, 10);
+            const rolInicial = rol || 'Agricultor';
+            const sueloInicial = suelo_preferido || 'Franco arcilloso';
+
+            const insertQuery = `
+                INSERT INTO usuario (nombre, correo, password, rol, suelo_preferido, verificado, codigo_verificacion)
+                VALUES (?, ?, ?, ?, ?, 1, NULL)
+            `;
+
+            db.query(insertQuery, [nombreGoogle, correoLimpio, randomSecret, rolInicial, sueloInicial], (errIns, insertRes) => {
+                if (errIns) {
+                    console.error('Error al crear usuario con Google:', errIns);
+                    return res.status(500).json({ error: 'No se pudo registrar la cuenta de Google.' });
+                }
+
+                const nuevoUsuario = {
+                    id_usuario: insertRes.insertId,
+                    nombre: nombreGoogle,
+                    correo: correoLimpio,
+                    rol: rolInicial,
+                    suelo_preferido: sueloInicial,
+                    verificado: 1
+                };
+
+                const token = jwt.sign(
+                    { id_usuario: nuevoUsuario.id_usuario, nombre: nuevoUsuario.nombre, correo: nuevoUsuario.correo, rol: nuevoUsuario.rol },
+                    JWT_SECRET,
+                    { expiresIn: '24h' }
+                );
+
+                return res.status(201).json({
+                    mensaje: `Cuenta creada con Google, ${nombreGoogle}`,
+                    token,
+                    usuario: nuevoUsuario
+                });
+            });
+        });
+    } catch (error) {
+        console.error('Error verificando token de Google:', error);
+        return res.status(401).json({ error: 'No se pudo validar la credencial de Google. Revisa tu GOOGLE_CLIENT_ID.' });
+    }
 };
 
 module.exports = {
@@ -242,6 +416,9 @@ module.exports = {
     verificarCorreo,
     reenviarCodigo,
     loginUsuario,
+    solicitarRecuperacion,
+    restablecerPassword,
     actualizarPerfil,
-    cambiarPassword
+    cambiarPassword,
+    loginConGoogle
 };
