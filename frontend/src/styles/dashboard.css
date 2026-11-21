@@ -1382,3 +1382,222 @@
     font-size: 0.92rem;
   }
 }
+
+/* ==========================================================================
+   8. Ajuste Responsivo de Topbar, Hero y Grids en Móvil
+   ========================================================================== */
+
+@media (max-width: 900px) {
+  .ceres-hero-card {
+    grid-template-columns: 1fr !important;
+    padding: 1.5rem !important;
+  }
+
+  .ceres-modules-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .ceres-split-workspace {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .ceres-topbar {
+    padding: 0.75rem 1rem !important;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    height: auto !important;
+  }
+
+  .ceres-topbar-controls {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+
+  .ceres-chip-control {
+    font-size: 0.76rem;
+    padding: 0.35rem 0.65rem;
+  }
+
+  .ceres-modules-grid,
+  .ceres-kpi-grid,
+  .ceres-form-row-2,
+  .ceres-report-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ceres-hero-heading {
+    font-size: 1.45rem !important;
+  }
+
+  .ceres-hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .ceres-hero-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.ceres-zona-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.ceres-zona-controls .ceres-select-box {
+  width: 215px;
+}
+
+@media (max-width: 640px) {
+  .ceres-zona-controls {
+    width: 100%;
+  }
+
+  .ceres-zona-controls .ceres-select-box,
+  .ceres-zona-controls .ceres-btn-forest {
+    width: 100%;
+    justify-content: center;
+  }
+}
+/* ==========================================================================
+   9. AppBar Móvil Nativa Colapsable al Scroll + Contraste Banner Climático
+   ========================================================================== */
+
+/* Asegurar texto claro dentro del banner verde oscuro de clima */
+.ceres-weather-banner h2,
+.ceres-weather-banner strong {
+  color: #FFFFFF !important;
+}
+
+.ceres-mobile-back-btn {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* AppBar compacta de una sola fila que se recoge al bajar */
+  .ceres-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 950;
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 0 0.9rem !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    background: rgba(248, 248, 243, 0.94) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--ceres-border);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease;
+  }
+
+  .ceres-topbar.topbar-hidden {
+    transform: translateY(-105%);
+  }
+
+  /* Ocultar breadcrumb tipo web y chips apilados en celular */
+  .ceres-breadcrumb-root,
+  .ceres-breadcrumb-sep,
+  .ceres-chip-hide-mobile,
+  .ceres-role-label-mobile {
+    display: none !important;
+  }
+
+  .ceres-mobile-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid var(--ceres-border);
+    background: #FFFFFF;
+    color: var(--ceres-forest);
+    margin-right: 0.55rem;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .ceres-breadcrumb {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .ceres-breadcrumb-current {
+    font-size: 1rem !important;
+    font-weight: 800 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ceres-topbar-controls {
+    width: auto !important;
+    flex-wrap: nowrap !important;
+    gap: 0.45rem !important;
+  }
+
+  /* Avatar compacto estilo app móvil */
+  .ceres-user-pill {
+    padding: 3px !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .ceres-bottom-tab:focus,
+  .ceres-bottom-tab:active {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ==========================================================================
+   10. Controles Diferenciados Web vs App Móvil en Escáner
+   ========================================================================== */
+
+.ceres-mobile-capture-grid {
+  display: none;
+}
+
+.ceres-only-mobile {
+  display: none;
+}
+
+.ceres-only-desktop {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .ceres-mobile-capture-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+    margin-top: 0.9rem;
+  }
+
+  .ceres-mobile-capture-grid .ceres-btn-outline {
+    padding: 0 0.5rem;
+    font-size: 0.84rem;
+    white-space: nowrap;
+  }
+
+  .ceres-only-mobile {
+    display: inline;
+  }
+
+  .ceres-only-desktop {
+    display: none;
+  }
+}

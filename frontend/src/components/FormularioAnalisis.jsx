@@ -128,7 +128,7 @@ function FormularioAnalisis({ usuario }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!imagen) {
-            setError('Toma una fotografía o selecciona una imagen de la galería antes de analizar.');
+            setError('Selecciona o captura una imagen antes de ejecutar el diagnóstico.');
             return;
         }
 
@@ -258,7 +258,12 @@ function FormularioAnalisis({ usuario }) {
                 <div>
                     <h1 className="ceres-section-title">Escáner Fitosanitario por Visión IA</h1>
                     <p className="ceres-section-subtitle">
-                        Captura una fotografía directa con tu cámara o sube una imagen de tu galería para identificar la especie y evaluar su estado sanitario.
+                        <span className="ceres-only-desktop">
+                            Sube una fotografía foliar desde tu equipo para identificar la especie, detectar posibles patologías y evaluar su viabilidad.
+                        </span>
+                        <span className="ceres-only-mobile">
+                            Captura una fotografía directa con tu cámara o sube una imagen de tu galería para evaluar el cultivo.
+                        </span>
                     </p>
                 </div>
             </div>
@@ -266,7 +271,7 @@ function FormularioAnalisis({ usuario }) {
             {error && <div className="ceres-alert-banner">{error}</div>}
 
             <div className="ceres-split-workspace">
-                {/* PANEL IZQUIERDO: CAPTURA DUAL (CÁMARA + GALERÍA) */}
+                {/* PANEL IZQUIERDO: CARGA / CAPTURA */}
                 <form className="ceres-surface-card" onSubmit={handleSubmit}>
                     {/* Input dedicado a cámara trasera en móvil */}
                     <input
@@ -329,24 +334,34 @@ function FormularioAnalisis({ usuario }) {
                                         color: 'var(--ceres-forest)'
                                     }}
                                 >
-                                    Toma una foto en campo o arrastra una imagen aquí
+                                    <span className="ceres-only-desktop">
+                                        Arrastra una imagen aquí o haz clic para seleccionarla
+                                    </span>
+                                    <span className="ceres-only-mobile">
+                                        Toma una foto en campo o sube una imagen
+                                    </span>
                                 </strong>
                                 <span
                                     style={{
                                         fontSize: '0.82rem',
                                         color: 'var(--ceres-muted)',
                                         marginTop: '0.35rem',
-                                        maxWidth: '310px'
+                                        maxWidth: '320px'
                                     }}
                                 >
-                                    Optimizado para captura móvil directa y archivos JPG, PNG o WEBP.
+                                    <span className="ceres-only-desktop">
+                                        Selecciona una fotografía foliar desde tu equipo (JPG, PNG o WEBP).
+                                    </span>
+                                    <span className="ceres-only-mobile">
+                                        Optimizado para captura móvil directa y archivos JPG, PNG o WEBP.
+                                    </span>
                                 </span>
                             </>
                         )}
                     </div>
 
-                    {/* BOTONES RÁPIDOS DE CÁMARA Y GALERÍA */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.9rem' }}>
+                    {/* BOTONES RÁPIDOS DE CÁMARA Y GALERÍA (SOLO EN MÓVIL <= 768px) */}
+                    <div className="ceres-mobile-capture-grid">
                         <button
                             type="button"
                             className="ceres-btn-outline"
@@ -354,7 +369,7 @@ function FormularioAnalisis({ usuario }) {
                             onClick={() => cameraInputRef.current?.click()}
                         >
                             <CameraIcon />
-                            <span>Tomar Foto</span>
+                            <span>Cámara</span>
                         </button>
 
                         <button
@@ -364,7 +379,7 @@ function FormularioAnalisis({ usuario }) {
                             onClick={() => galleryInputRef.current?.click()}
                         >
                             <ImageFolderIcon />
-                            <span>Galería / Archivo</span>
+                            <span>Galería</span>
                         </button>
                     </div>
 
@@ -569,7 +584,12 @@ function FormularioAnalisis({ usuario }) {
                                 lineHeight: 1.55
                             }}
                         >
-                            Usa <strong>Tomar Foto</strong> en campo o selecciona una imagen de tu galería para obtener la identificación taxonómica, estado sanitario y plan de manejo.
+                            <span className="ceres-only-desktop">
+                                Selecciona una fotografía foliar desde tu equipo para obtener la identificación taxonómica, estado sanitario y plan de manejo.
+                            </span>
+                            <span className="ceres-only-mobile">
+                                Usa <strong>Cámara</strong> en campo o selecciona una imagen de tu <strong>Galería</strong> para obtener el diagnóstico completo.
+                            </span>
                         </p>
                     </div>
                 )}

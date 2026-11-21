@@ -327,11 +327,29 @@ const AuthForm = ({ onLoginSuccess }) => {
             setLoading(false);
         }
     };
+
     const googleBtnRef = useRef(null);
     const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
     useEffect(() => {
         if ((vista !== 'login' && vista !== 'register') || !googleClientId) return;
+
+        const renderizarBotonGoogle = () => {
+            if (!window.google?.accounts?.id || !googleBtnRef.current) return;
+
+            const anchoContenedor = googleBtnRef.current.parentElement?.offsetWidth || 300;
+            const anchoBoton = Math.max(220, Math.min(380, Math.floor(anchoContenedor)));
+
+            googleBtnRef.current.innerHTML = '';
+            window.google.accounts.id.renderButton(googleBtnRef.current, {
+                theme: 'outline',
+                size: 'large',
+                shape: 'pill',
+                text: vista === 'register' ? 'signup_with' : 'continue_with',
+                width: anchoBoton,
+                locale: 'es'
+            });
+        };
 
         const inicializarGoogle = () => {
             if (!window.google?.accounts?.id || !googleBtnRef.current) return;
@@ -358,28 +376,26 @@ const AuthForm = ({ onLoginSuccess }) => {
                 }
             });
 
-            googleBtnRef.current.innerHTML = '';
-            window.google.accounts.id.renderButton(googleBtnRef.current, {
-                theme: 'outline',
-                size: 'large',
-                shape: 'pill',
-                text: vista === 'register' ? 'signup_with' : 'continue_with',
-                width: 380,
-                locale: 'es'
-            });
+            renderizarBotonGoogle();
         };
 
+        let timer;
         if (window.google?.accounts?.id) {
             inicializarGoogle();
         } else {
-            const timer = setInterval(() => {
+            timer = setInterval(() => {
                 if (window.google?.accounts?.id) {
                     clearInterval(timer);
                     inicializarGoogle();
                 }
             }, 250);
-            return () => clearInterval(timer);
         }
+
+        window.addEventListener('resize', renderizarBotonGoogle);
+        return () => {
+            if (timer) clearInterval(timer);
+            window.removeEventListener('resize', renderizarBotonGoogle);
+        };
     }, [vista, googleClientId, formData.rol, formData.suelo_preferido]);
 
     return (
@@ -602,9 +618,22 @@ const AuthForm = ({ onLoginSuccess }) => {
                                         <span>o continúa con</span>
                                     </div>
 
-                                    <div className="ceres-google-wrapper">
+                                    <div
+                                        className="ceres-google-wrapper"
+                                        style={{
+                                            width: '100%',
+                                            maxWidth: '100%',
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            justifyContent: 'center'
+                                        }}
+                                    >
                                         {googleClientId ? (
-                                            <div ref={googleBtnRef} className="ceres-google-slot" />
+                                            <div
+                                                ref={googleBtnRef}
+                                                className="ceres-google-slot"
+                                                style={{ maxWidth: '100%', display: 'flex', justifyContent: 'center' }}
+                                            />
                                         ) : (
                                             <button
                                                 type="button"
@@ -623,12 +652,6 @@ const AuthForm = ({ onLoginSuccess }) => {
                                             </button>
                                         )}
                                     </div>
-
-                                    {vista === 'register' && (
-                                        <p className="ceres-legal-note">
-                                            Al crear tu cuenta aceptas el procesamiento de diagnósticos botánicos y telemetría agroclimática en CERES IA.
-                                        </p>
-                                    )}
                                 </form>
 
                                 <div className="ceres-auth-switch">
@@ -848,9 +871,22 @@ const AuthForm = ({ onLoginSuccess }) => {
                                         <span>o continúa con</span>
                                     </div>
 
-                                    <div className="ceres-google-wrapper">
+                                    <div
+                                        className="ceres-google-wrapper"
+                                        style={{
+                                            width: '100%',
+                                            maxWidth: '100%',
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            justifyContent: 'center'
+                                        }}
+                                    >
                                         {googleClientId ? (
-                                            <div ref={googleBtnRef} className="ceres-google-slot" />
+                                            <div
+                                                ref={googleBtnRef}
+                                                className="ceres-google-slot"
+                                                style={{ maxWidth: '100%', display: 'flex', justifyContent: 'center' }}
+                                            />
                                         ) : (
                                             <button
                                                 type="button"
@@ -870,11 +906,9 @@ const AuthForm = ({ onLoginSuccess }) => {
                                         )}
                                     </div>
 
-                                    {vista === 'register' && (
-                                        <p className="ceres-legal-note">
-                                            Al crear tu cuenta aceptas el procesamiento de diagnósticos botánicos y telemetría agroclimática en CERES IA.
-                                        </p>
-                                    )}
+                                    <p className="ceres-legal-note">
+                                        Al crear tu cuenta aceptas el procesamiento de diagnósticos botánicos y telemetría agroclimática en CERES IA.
+                                    </p>
                                 </form>
 
                                 <div className="ceres-auth-switch">

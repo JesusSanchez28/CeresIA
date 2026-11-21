@@ -94,6 +94,12 @@ const ArrowRightIcon = () => (
     </svg>
 );
 
+const BackIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m15 18-6-6 6-6" />
+    </svg>
+);
+
 const ActivityIcon = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
@@ -112,6 +118,7 @@ const TITULOS_VISTA = {
 function App() {
     const [usuario, setUsuario] = useState(null);
     const [vistaActual, setVistaActual] = useState('inicio');
+    const [topbarOculta, setTopbarOculta] = useState(false);
     const [metricas, setMetricas] = useState({ total: 0, aptos: 0, ultimoCultivo: 'Sin registros' });
     const [telemetria, setTelemetria] = useState({
         ubicacion: 'Detectando GPS...',
@@ -128,6 +135,29 @@ function App() {
             setUsuario(JSON.parse(usuarioGuardado));
         }
     }, []);
+
+    // Ocultar AppBar al desplazarse hacia abajo y mostrarla al subir
+    useEffect(() => {
+        let ultimoScroll = window.scrollY;
+        const manejarScroll = () => {
+            const actual = window.scrollY;
+            if (actual > ultimoScroll && actual > 64) {
+                setTopbarOculta(true);
+            } else if (actual < ultimoScroll) {
+                setTopbarOculta(false);
+            }
+            ultimoScroll = actual;
+        };
+        window.addEventListener('scroll', manejarScroll, { passive: true });
+        return () => window.removeEventListener('scroll', manejarScroll);
+    }, []);
+
+    // Al cambiar de vista, asegurar que la barra superior esté visible y arriba
+    const cambiarVista = (nuevaVista) => {
+        setVistaActual(nuevaVista);
+        setTopbarOculta(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     // Sincronizar métricas reales de MySQL y telemetría climática GPS
     useEffect(() => {
@@ -250,7 +280,7 @@ function App() {
                         <button
                             type="button"
                             className={`ceres-nav-btn ${vistaActual === 'inicio' ? 'active' : ''}`}
-                            onClick={() => setVistaActual('inicio')}
+                            onClick={() => cambiarVista('inicio')}
                         >
                             <span className="ceres-nav-btn-left">
                                 <HomeIcon />
@@ -261,7 +291,7 @@ function App() {
                         <button
                             type="button"
                             className={`ceres-nav-btn ${vistaActual === 'analizar' ? 'active' : ''}`}
-                            onClick={() => setVistaActual('analizar')}
+                            onClick={() => cambiarVista('analizar')}
                         >
                             <span className="ceres-nav-btn-left">
                                 <ScanIcon />
@@ -272,7 +302,7 @@ function App() {
                         <button
                             type="button"
                             className={`ceres-nav-btn ${vistaActual === 'compatibilidad' ? 'active' : ''}`}
-                            onClick={() => setVistaActual('compatibilidad')}
+                            onClick={() => cambiarVista('compatibilidad')}
                         >
                             <span className="ceres-nav-btn-left">
                                 <CompassIcon />
@@ -283,7 +313,7 @@ function App() {
                         <button
                             type="button"
                             className={`ceres-nav-btn ${vistaActual === 'historial' ? 'active' : ''}`}
-                            onClick={() => setVistaActual('historial')}
+                            onClick={() => cambiarVista('historial')}
                         >
                             <span className="ceres-nav-btn-left">
                                 <HistoryIcon />
@@ -297,7 +327,7 @@ function App() {
                         <button
                             type="button"
                             className={`ceres-nav-btn ${vistaActual === 'catalogo' ? 'active' : ''}`}
-                            onClick={() => setVistaActual('catalogo')}
+                            onClick={() => cambiarVista('catalogo')}
                         >
                             <span className="ceres-nav-btn-left">
                                 <SproutIcon />
@@ -308,7 +338,7 @@ function App() {
                         <button
                             type="button"
                             className={`ceres-nav-btn ${vistaActual === 'perfil' ? 'active' : ''}`}
-                            onClick={() => setVistaActual('perfil')}
+                            onClick={() => cambiarVista('perfil')}
                         >
                             <span className="ceres-nav-btn-left">
                                 <SettingsIcon />
@@ -338,30 +368,38 @@ function App() {
 
             {/* ÁREA DE TRABAJO */}
             <div className="ceres-workspace">
-                {/* TOPBAR FUNCIONAL */}
-                <header className="ceres-topbar">
+                {/* TOPBAR FUNCIONAL (AppBar colapsable en móvil) */}
+                <header className={`ceres-topbar ${topbarOculta ? 'topbar-hidden' : ''}`}>
                     <div className="ceres-breadcrumb">
                         {vistaActual !== 'inicio' && (
                             <>
+                                <button
+                                    type="button"
+                                    className="ceres-mobile-back-btn"
+                                    onClick={() => cambiarVista('inicio')}
+                                    aria-label="Volver al inicio"
+                                >
+                                    <BackIcon />
+                                </button>
                                 <span
                                     className="ceres-breadcrumb-root"
-                                    onClick={() => setVistaActual('inicio')}
+                                    onClick={() => cambiarVista('inicio')}
                                 >
                                     Inicio
                                 </span>
-                                <span style={{ color: 'var(--ceres-sage)' }}>/</span>
+                                <span className="ceres-breadcrumb-sep" style={{ color: 'var(--ceres-sage)' }}>/</span>
                             </>
                         )}
                         <span className="ceres-breadcrumb-current">
                             {vistaActual === 'inicio'
-                                ? `Bienvenido, ${primerNombre}`
+                                ? `Hola, ${primerNombre}`
                                 : TITULOS_VISTA[vistaActual]}
                         </span>
                     </div>
 
                     <div className="ceres-topbar-controls">
-                        {/* Selector rápido de suelo activo */}
-                        <div className="ceres-chip-control" title="Cambiar suelo predeterminado para análisis">
+                        {/* Selector rápido de suelo activo (visible en escritorio) */}
+                        <div className="ceres-chip-control ceres-chip-hide-mobile" title="Cambiar suelo predeterminado para análisis">
                             <LayersIcon />
                             <span>Suelo:</span>
                             <select
@@ -376,7 +414,7 @@ function App() {
                             </select>
                         </div>
 
-                        <div className="ceres-chip-control">
+                        <div className="ceres-chip-control ceres-chip-hide-mobile">
                             <MapPinIcon />
                             <span>{telemetria.ubicacion}</span>
                         </div>
@@ -384,11 +422,14 @@ function App() {
                         <button
                             type="button"
                             className="ceres-user-pill"
-                            onClick={() => setVistaActual('perfil')}
+                            onClick={() => cambiarVista('perfil')}
                             title="Gestionar perfil"
                         >
                             <div className="ceres-avatar">{iniciales}</div>
-                            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ceres-charcoal)' }}>
+                            <span
+                                className="ceres-role-label-mobile"
+                                style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--ceres-charcoal)' }}
+                            >
                                 {usuario.rol || 'Agricultor'}
                             </span>
                         </button>
@@ -413,7 +454,7 @@ function App() {
                                         <button
                                             type="button"
                                             className="ceres-btn-cta-primary"
-                                            onClick={() => setVistaActual('analizar')}
+                                            onClick={() => cambiarVista('analizar')}
                                         >
                                             <ScanIcon />
                                             <span>Iniciar diagnóstico</span>
@@ -422,7 +463,7 @@ function App() {
                                         <button
                                             type="button"
                                             className="ceres-btn-cta-secondary"
-                                            onClick={() => setVistaActual('compatibilidad')}
+                                            onClick={() => cambiarVista('compatibilidad')}
                                         >
                                             <span>Evaluar terreno</span>
                                             <ArrowRightIcon />
@@ -457,7 +498,7 @@ function App() {
                                 <button
                                     type="button"
                                     className="ceres-module-card"
-                                    onClick={() => setVistaActual('analizar')}
+                                    onClick={() => cambiarVista('analizar')}
                                 >
                                     <div className="ceres-module-top">
                                         <div className="ceres-module-icon">
@@ -483,7 +524,7 @@ function App() {
                                 <button
                                     type="button"
                                     className="ceres-module-card"
-                                    onClick={() => setVistaActual('compatibilidad')}
+                                    onClick={() => cambiarVista('compatibilidad')}
                                 >
                                     <div className="ceres-module-top">
                                         <div className="ceres-module-icon">
@@ -509,7 +550,7 @@ function App() {
                                 <button
                                     type="button"
                                     className="ceres-module-card"
-                                    onClick={() => setVistaActual('historial')}
+                                    onClick={() => cambiarVista('historial')}
                                 >
                                     <div className="ceres-module-top">
                                         <div className="ceres-module-icon">
@@ -535,7 +576,7 @@ function App() {
                                 <button
                                     type="button"
                                     className="ceres-module-card"
-                                    onClick={() => setVistaActual('catalogo')}
+                                    onClick={() => cambiarVista('catalogo')}
                                 >
                                     <div className="ceres-module-top">
                                         <div className="ceres-module-icon">
@@ -611,7 +652,8 @@ function App() {
                         <PerfilUsuario
                             usuario={usuario}
                             onUsuarioActualizado={(userActualizado) => setUsuario(userActualizado)}
-                            onVolver={() => setVistaActual('inicio')}
+                            onVolver={() => cambiarVista('inicio')}
+                            onLogout={handleLogout}
                         />
                     )}
                 </main>
@@ -622,7 +664,7 @@ function App() {
                 <button
                     type="button"
                     className={`ceres-bottom-tab ${vistaActual === 'inicio' ? 'active' : ''}`}
-                    onClick={() => setVistaActual('inicio')}
+                    onClick={() => cambiarVista('inicio')}
                 >
                     <HomeIcon />
                     <span>Inicio</span>
@@ -631,7 +673,7 @@ function App() {
                 <button
                     type="button"
                     className={`ceres-bottom-tab ${vistaActual === 'compatibilidad' ? 'active' : ''}`}
-                    onClick={() => setVistaActual('compatibilidad')}
+                    onClick={() => cambiarVista('compatibilidad')}
                 >
                     <CompassIcon />
                     <span>Zona</span>
@@ -640,7 +682,7 @@ function App() {
                 <button
                     type="button"
                     className={`ceres-bottom-tab ${vistaActual === 'analizar' ? 'active' : ''}`}
-                    onClick={() => setVistaActual('analizar')}
+                    onClick={() => cambiarVista('analizar')}
                     aria-label="Escanear planta"
                 >
                     <span className="ceres-bottom-tab-scan">
@@ -652,7 +694,7 @@ function App() {
                 <button
                     type="button"
                     className={`ceres-bottom-tab ${vistaActual === 'historial' ? 'active' : ''}`}
-                    onClick={() => setVistaActual('historial')}
+                    onClick={() => cambiarVista('historial')}
                 >
                     <HistoryIcon />
                     <span>Historial</span>
@@ -661,7 +703,7 @@ function App() {
                 <button
                     type="button"
                     className={`ceres-bottom-tab ${vistaActual === 'catalogo' ? 'active' : ''}`}
-                    onClick={() => setVistaActual('catalogo')}
+                    onClick={() => cambiarVista('catalogo')}
                 >
                     <SproutIcon />
                     <span>Catálogo</span>

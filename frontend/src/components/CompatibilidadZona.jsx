@@ -59,7 +59,7 @@ function CompatibilidadZona({ usuario }) {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => ejecutarPeticion(pos.coords.latitude, pos.coords.longitude),
-                () => ejecutarPeticion(4.8136, -74.3545) // Coordenadas base Sabana Occidente si GPS está bloqueado
+                () => ejecutarPeticion(4.8136, -74.3545)
             );
         } else {
             ejecutarPeticion(4.8136, -74.3545);
@@ -67,8 +67,10 @@ function CompatibilidadZona({ usuario }) {
     };
 
     useEffect(() => {
-        consultarCompatibilidad(suelo);
-    }, []);
+        const sueloActivo = usuario?.suelo_preferido || 'Franco arcilloso';
+        setSuelo(sueloActivo);
+        consultarCompatibilidad(sueloActivo);
+    }, [usuario?.suelo_preferido]);
 
     const clima = datosZona?.clima || {};
     const cultivos =
@@ -87,10 +89,10 @@ function CompatibilidadZona({ usuario }) {
                     </p>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+                <div className="ceres-zona-controls">
                     <select
                         className="ceres-select-box"
-                        style={{ width: '210px', background: '#FFFFFF' }}
+                        style={{ background: '#FFFFFF' }}
                         value={suelo}
                         onChange={(e) => {
                             setSuelo(e.target.value);
@@ -117,148 +119,159 @@ function CompatibilidadZona({ usuario }) {
 
             {error && <div className="ceres-alert-banner">{error}</div>}
 
-            {!cargando && datosZona && (
-                <>
-                    {/* BANNER DE TELEMETRÍA METEOROLÓGICA */}
-                    <section className="ceres-weather-banner">
-                        <div>
-                            <span
-                                style={{
-                                    fontSize: '0.74rem',
-                                    fontWeight: 700,
-                                    letterSpacing: '0.09em',
-                                    textTransform: 'uppercase',
-                                    color: 'var(--ceres-gold)'
-                                }}
-                            >
-                                Estación Agroclimática Activa
-                            </span>
-                            <h2
-                                style={{
-                                    fontFamily: 'Manrope, sans-serif',
-                                    fontSize: '1.45rem',
-                                    fontWeight: 800,
-                                    margin: '0.25rem 0'
-                                }}
-                            >
-                                {clima.ubicacion || 'Zona de Cultivo Evaluada'}
-                            </h2>
-                            <span style={{ fontSize: '0.86rem', color: 'var(--ceres-light)' }}>
-                                {clima.descripcion || 'Condiciones estables'} · Sustrato: <strong>{suelo}</strong>
-                            </span>
-                        </div>
-
-                        <div className="ceres-weather-stats">
-                            <div className="ceres-weather-stat-box">
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.75rem', color: 'var(--ceres-sage)' }}>
-                                    <ThermometerIcon />
-                                    <span>Temperatura</span>
-                                </div>
-                                <strong style={{ fontFamily: 'Manrope, sans-serif', fontSize: '1.35rem' }}>
-                                    {clima.temperatura !== undefined ? `${Math.round(clima.temperatura)}°C` : '18°C'}
-                                </strong>
+            {cargando ? (
+                <div className="ceres-surface-card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
+                    <strong style={{ fontFamily: 'Manrope, sans-serif', color: 'var(--ceres-forest)', display: 'block', marginBottom: '0.35rem' }}>
+                        Analizando microclima y sustrato ({suelo})...
+                    </strong>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--ceres-muted)' }}>
+                        Consultando estación meteorológica y motor agronómico CERES IA.
+                    </span>
+                </div>
+            ) : (
+                datosZona && (
+                    <>
+                        {/* BANNER DE TELEMETRÍA METEOROLÓGICA */}
+                        <section className="ceres-weather-banner">
+                            <div>
+                                <span
+                                    style={{
+                                        fontSize: '0.74rem',
+                                        fontWeight: 700,
+                                        letterSpacing: '0.09em',
+                                        textTransform: 'uppercase',
+                                        color: 'var(--ceres-gold)'
+                                    }}
+                                >
+                                    Estación Agroclimática Activa
+                                </span>
+                                <h2
+                                    style={{
+                                        fontFamily: 'Manrope, sans-serif',
+                                        fontSize: '1.45rem',
+                                        fontWeight: 800,
+                                        margin: '0.25rem 0'
+                                    }}
+                                >
+                                    {clima.ubicacion || 'Zona de Cultivo Evaluada'}
+                                </h2>
+                                <span style={{ fontSize: '0.86rem', color: 'var(--ceres-light)' }}>
+                                    {clima.descripcion || 'Condiciones estables'} · Sustrato: <strong>{suelo}</strong>
+                                </span>
                             </div>
 
-                            <div className="ceres-weather-stat-box">
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.75rem', color: 'var(--ceres-sage)' }}>
-                                    <DropletsIcon />
-                                    <span>Humedad Relativa</span>
+                            <div className="ceres-weather-stats">
+                                <div className="ceres-weather-stat-box">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.75rem', color: 'var(--ceres-sage)' }}>
+                                        <ThermometerIcon />
+                                        <span>Temperatura</span>
+                                    </div>
+                                    <strong style={{ fontFamily: 'Manrope, sans-serif', fontSize: '1.35rem' }}>
+                                        {clima.temperatura !== undefined ? `${Math.round(clima.temperatura)}°C` : '18°C'}
+                                    </strong>
                                 </div>
-                                <strong style={{ fontFamily: 'Manrope, sans-serif', fontSize: '1.35rem' }}>
-                                    {clima.humedad !== undefined ? `${clima.humedad}%` : '74%'}
-                                </strong>
-                            </div>
-                        </div>
-                    </section>
 
-                    {/* TARJETAS DE CULTIVOS COMPATIBLES */}
-                    {cultivos.length > 0 ? (
-                        <div className="ceres-crops-grid">
-                            {cultivos.map((item, idx) => {
-                                const afinidad = item.porcentaje_compatibilidad || item.compatibilidad || (95 - idx * 6);
-                                return (
-                                    <article key={item.id_planta || idx} className="ceres-crop-card">
-                                        <div>
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'space-between',
-                                                    gap: '0.5rem'
-                                                }}
-                                            >
-                                                <h3
+                                <div className="ceres-weather-stat-box">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.75rem', color: 'var(--ceres-sage)' }}>
+                                        <DropletsIcon />
+                                        <span>Humedad Relativa</span>
+                                    </div>
+                                    <strong style={{ fontFamily: 'Manrope, sans-serif', fontSize: '1.35rem' }}>
+                                        {clima.humedad !== undefined ? `${clima.humedad}%` : '74%'}
+                                    </strong>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* TARJETAS DE CULTIVOS COMPATIBLES */}
+                        {cultivos.length > 0 ? (
+                            <div className="ceres-crops-grid">
+                                {cultivos.map((item, idx) => {
+                                    const afinidad = item.porcentaje_compatibilidad || item.compatibilidad || (95 - idx * 6);
+                                    return (
+                                        <article key={item.id_planta_semilla || item.id_planta || idx} className="ceres-crop-card">
+                                            <div>
+                                                <div
                                                     style={{
-                                                        fontFamily: 'Manrope, sans-serif',
-                                                        fontSize: '1.1rem',
-                                                        fontWeight: 800,
-                                                        color: 'var(--ceres-forest)',
-                                                        margin: 0
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        gap: '0.5rem'
                                                     }}
                                                 >
-                                                    {item.nombre_comun || item.nombre}
-                                                </h3>
-                                                <span className="ceres-status-pill apto">
-                                                    {afinidad}% Afinidad
-                                                </span>
+                                                    <h3
+                                                        style={{
+                                                            fontFamily: 'Manrope, sans-serif',
+                                                            fontSize: '1.1rem',
+                                                            fontWeight: 800,
+                                                            color: 'var(--ceres-forest)',
+                                                            margin: 0
+                                                        }}
+                                                    >
+                                                        {item.nombre_comun || item.nombre}
+                                                    </h3>
+                                                    <span className="ceres-status-pill apto">
+                                                        {afinidad}% Afinidad
+                                                    </span>
+                                                </div>
+
+                                                {item.nombre_cientifico && (
+                                                    <em style={{ fontSize: '0.8rem', color: 'var(--ceres-muted)' }}>
+                                                        {item.nombre_cientifico}
+                                                    </em>
+                                                )}
+
+                                                <div className="ceres-progress-track">
+                                                    <div
+                                                        className="ceres-progress-fill"
+                                                        style={{ width: `${Math.min(100, Math.max(20, afinidad))}%` }}
+                                                    />
+                                                </div>
+
+                                                <p
+                                                    style={{
+                                                        fontSize: '0.84rem',
+                                                        color: 'var(--ceres-charcoal)',
+                                                        lineHeight: 1.5,
+                                                        margin: '0 0 0.85rem 0'
+                                                    }}
+                                                >
+                                                    {item.descripcion ||
+                                                        item.motivo ||
+                                                        `Desarrollo óptimo en suelos ${item.tipo_suelo_ideal || suelo} bajo el régimen térmico actual.`}
+                                                </p>
                                             </div>
 
-                                            {item.nombre_cientifico && (
-                                                <em style={{ fontSize: '0.8rem', color: 'var(--ceres-muted)' }}>
-                                                    {item.nombre_cientifico}
-                                                </em>
-                                            )}
-
-                                            <div className="ceres-progress-track">
-                                                <div
-                                                    className="ceres-progress-fill"
-                                                    style={{ width: `${Math.min(100, Math.max(20, afinidad))}%` }}
-                                                />
-                                            </div>
-
-                                            <p
+                                            <div
                                                 style={{
-                                                    fontSize: '0.84rem',
-                                                    color: 'var(--ceres-charcoal)',
-                                                    lineHeight: 1.5,
-                                                    margin: '0 0 0.85rem 0'
+                                                    paddingTop: '0.75rem',
+                                                    borderTop: '1px solid var(--ceres-light)',
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    fontSize: '0.76rem',
+                                                    color: 'var(--ceres-muted)'
                                                 }}
                                             >
-                                                {item.descripcion ||
-                                                    item.motivo ||
-                                                    `Desarrollo óptimo en suelos ${item.tipo_suelo_ideal || suelo} bajo el régimen térmico actual.`}
-                                            </p>
-                                        </div>
-
-                                        <div
-                                            style={{
-                                                paddingTop: '0.75rem',
-                                                borderTop: '1px solid var(--ceres-light)',
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                fontSize: '0.76rem',
-                                                color: 'var(--ceres-muted)'
-                                            }}
-                                        >
-                                            <span>
-                                                Temp: <strong>{item.temp_min ?? 12}°C – {item.temp_max ?? 24}°C</strong>
-                                            </span>
-                                            <span>
-                                                Suelo: <strong>{item.tipo_suelo_ideal || suelo}</strong>
-                                            </span>
-                                        </div>
-                                    </article>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <div className="ceres-surface-card" style={{ textAlign: 'center', padding: '2.5rem' }}>
-                            <p className="m-0" style={{ color: 'var(--ceres-muted)' }}>
-                                No se encontraron cultivos registrados en el catálogo para cruzar con esta temperatura.
-                            </p>
-                        </div>
-                    )}
-                </>
+                                                <span>
+                                                    Temp: <strong>{item.temp_min ?? 12}°C – {item.temp_max ?? 24}°C</strong>
+                                                </span>
+                                                <span>
+                                                    Suelo: <strong>{item.tipo_suelo_ideal || suelo}</strong>
+                                                </span>
+                                            </div>
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="ceres-surface-card" style={{ textAlign: 'center', padding: '2.5rem' }}>
+                                <p style={{ color: 'var(--ceres-muted)', margin: 0 }}>
+                                    No se encontraron cultivos registrados en el catálogo para cruzar con esta temperatura.
+                                </p>
+                            </div>
+                        )}
+                    </>
+                )
             )}
         </div>
     );
