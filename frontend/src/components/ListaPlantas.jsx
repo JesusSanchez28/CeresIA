@@ -70,7 +70,7 @@ function ListaPlantas() {
                 </div>
 
                 <select
-                    className="ceres-select-box"
+                    className="ceres-select-box ceres-catalog-soil-select"
                     style={{ width: '220px', background: '#FFFFFF' }}
                     value={sueloFiltro}
                     onChange={(e) => setSueloFiltro(e.target.value)}
@@ -96,8 +96,8 @@ function ListaPlantas() {
                     {filtradas.map((planta, idx) => (
                         <article key={planta.id_planta_semilla || planta.id_planta || idx} className="ceres-plant-card">
                             <div>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.6rem', marginBottom: '0.75rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.6rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0, flex: 1 }}>
                                         <div
                                             style={{
                                                 width: '40px',
@@ -113,7 +113,7 @@ function ListaPlantas() {
                                         >
                                             <SproutIcon />
                                         </div>
-                                        <div>
+                                        <div style={{ minWidth: 0 }}>
                                             <h3
                                                 style={{
                                                     fontFamily: 'Manrope, sans-serif',

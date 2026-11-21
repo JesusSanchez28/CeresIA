@@ -1,0 +1,16 @@
+{
+  "short_name": "CERES IA",
+  "name": "CERES IA — Agro-Inteligencia",
+  "icons": [
+    {
+      "src": "/ceres-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#163D2B",
+  "background_color": "#F8F8F3"
+}

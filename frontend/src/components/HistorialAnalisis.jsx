@@ -153,13 +153,13 @@ function HistorialAnalisis({ usuario }) {
                                 style={{ flexDirection: 'column', alignItems: 'stretch' }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', minWidth: 0, flex: '1 1 240px' }}>
                                         <div className="ceres-history-thumb">
                                             <LeafIcon />
                                         </div>
 
-                                        <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                                        <div style={{ minWidth: 0, flex: 1 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flexWrap: 'wrap' }}>
                                                 <h3
                                                     style={{
                                                         fontFamily: 'Manrope, sans-serif',
@@ -176,7 +176,7 @@ function HistorialAnalisis({ usuario }) {
                                                 </span>
                                             </div>
 
-                                            <span style={{ fontSize: '0.78rem', color: 'var(--ceres-muted)', display: 'block', marginTop: '0.25rem' }}>
+                                            <span style={{ fontSize: '0.78rem', color: 'var(--ceres-muted)', display: 'block', marginTop: '0.25rem', lineHeight: 1.4 }}>
                                                 {fechaTexto} · Suelo: <strong>{item.tipo_suelo || 'Franco arcilloso'}</strong>
                                                 {item.ubicacion ? ` · ${item.ubicacion}` : ''}
                                                 {item.temperatura != null ? ` (${Math.round(item.temperatura)}°C / ${Math.round(item.humedad ?? 0)}%)` : ''}
@@ -184,11 +184,11 @@ function HistorialAnalisis({ usuario }) {
                                         </div>
                                     </div>
 
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <div className="ceres-history-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <button
                                             type="button"
-                                            className="ceres-btn-outline"
-                                            style={{ height: '36px', fontSize: '0.8rem' }}
+                                            className="ceres-btn-outline ceres-btn-view-report"
+                                            style={{ height: '38px', fontSize: '0.8rem' }}
                                             onClick={() => setExpandidoId(abierto ? null : item.id)}
                                         >
                                             {abierto ? 'Ocultar informe' : 'Ver informe'}
@@ -197,7 +197,7 @@ function HistorialAnalisis({ usuario }) {
                                         <button
                                             type="button"
                                             className="ceres-btn-outline"
-                                            style={{ height: '36px', padding: '0 0.7rem', color: '#991B1B' }}
+                                            style={{ height: '38px', padding: '0 0.75rem', color: '#B91C1C', borderColor: '#F3B8B8', background: '#FEF2F2' }}
                                             title="Eliminar registro"
                                             onClick={() => eliminarRegistro(item.id)}
                                         >
@@ -214,7 +214,7 @@ function HistorialAnalisis({ usuario }) {
                                             borderTop: '1px solid var(--ceres-light)'
                                         }}
                                     >
-                                        <div className="ceres-report-block" style={{ marginBottom: 0 }}>
+                                        <div className="ceres-report-block" style={{ marginBottom: 0, overflowWrap: 'anywhere' }}>
                                             <h4>Resultado del Diagnóstico y Protocolo</h4>
                                             <p>{item.diagnostico || 'Diagnóstico registrado en el sistema.'}</p>
                                         </div>

@@ -1601,3 +1601,45 @@
     display: none;
   }
 }
+/* ==========================================================================
+   11. Adaptación Móvil de Historial y Catálogo Botánico
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .ceres-toolbar {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.65rem;
+  }
+
+  .ceres-search-wrapper,
+  .ceres-filter-pills,
+  .ceres-catalog-soil-select {
+    width: 100% !important;
+  }
+
+  .ceres-filter-pills {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .ceres-filter-pill {
+    text-align: center;
+    padding: 0.5rem 0.35rem;
+    font-size: 0.78rem;
+  }
+
+  .ceres-plant-grid,
+  .ceres-crops-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ceres-history-actions {
+    width: 100%;
+  }
+
+  .ceres-history-actions .ceres-btn-view-report {
+    flex: 1;
+    justify-content: center;
+  }
+}

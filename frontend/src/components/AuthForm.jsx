@@ -118,7 +118,6 @@ const AuthForm = ({ onLoginSuccess }) => {
     const [info, setInfo] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // Determina si el diseño debe desplazar los paneles (Registro hacia la izquierda, visual a la derecha)
     const panelesIntercambiados = vista === 'register';
 
     const seguridadPassword = useMemo(
@@ -330,6 +329,19 @@ const AuthForm = ({ onLoginSuccess }) => {
 
     const googleBtnRef = useRef(null);
     const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const preferenciasRef = useRef({
+        rol: formData.rol,
+        suelo_preferido: formData.suelo_preferido,
+        onLoginSuccess
+    });
+
+    useEffect(() => {
+        preferenciasRef.current = {
+            rol: formData.rol,
+            suelo_preferido: formData.suelo_preferido,
+            onLoginSuccess
+        };
+    }, [formData.rol, formData.suelo_preferido, onLoginSuccess]);
 
     useEffect(() => {
         if ((vista !== 'login' && vista !== 'register') || !googleClientId) return;
@@ -351,42 +363,46 @@ const AuthForm = ({ onLoginSuccess }) => {
             });
         };
 
-        const inicializarGoogle = () => {
+        const inicializarUnaSolaVez = () => {
             if (!window.google?.accounts?.id || !googleBtnRef.current) return;
 
-            window.google.accounts.id.initialize({
-                client_id: googleClientId,
-                callback: async (response) => {
-                    setLoading(true);
-                    setError(null);
-                    setInfo(null);
-                    try {
-                        const res = await api.post('/auth/google', {
-                            credential: response.credential,
-                            rol: formData.rol,
-                            suelo_preferido: formData.suelo_preferido
-                        });
-                        guardarSesion(res.data.token, res.data.usuario);
-                        onLoginSuccess(res.data.usuario);
-                    } catch (err) {
-                        setError(err.response?.data?.error || 'No se pudo iniciar sesión con Google.');
-                    } finally {
-                        setLoading(false);
+            if (!window.__ceresGoogleInitialized) {
+                window.__ceresGoogleInitialized = true;
+                window.google.accounts.id.initialize({
+                    client_id: googleClientId,
+                    callback: async (response) => {
+                        setLoading(true);
+                        setError(null);
+                        setInfo(null);
+                        try {
+                            const { rol, suelo_preferido, onLoginSuccess: onSuccess } = preferenciasRef.current;
+                            const res = await api.post('/auth/google', {
+                                credential: response.credential,
+                                rol,
+                                suelo_preferido
+                            });
+                            guardarSesion(res.data.token, res.data.usuario);
+                            onSuccess(res.data.usuario);
+                        } catch (err) {
+                            setError(err.response?.data?.error || 'No se pudo iniciar sesión con Google.');
+                        } finally {
+                            setLoading(false);
+                        }
                     }
-                }
-            });
+                });
+            }
 
             renderizarBotonGoogle();
         };
 
         let timer;
         if (window.google?.accounts?.id) {
-            inicializarGoogle();
+            inicializarUnaSolaVez();
         } else {
             timer = setInterval(() => {
                 if (window.google?.accounts?.id) {
                     clearInterval(timer);
-                    inicializarGoogle();
+                    inicializarUnaSolaVez();
                 }
             }, 250);
         }
@@ -396,7 +412,7 @@ const AuthForm = ({ onLoginSuccess }) => {
             if (timer) clearInterval(timer);
             window.removeEventListener('resize', renderizarBotonGoogle);
         };
-    }, [vista, googleClientId, formData.rol, formData.suelo_preferido]);
+    }, [vista, googleClientId]);
 
     return (
         <div className={`ceres-auth-page ${panelesIntercambiados ? 'is-swapped' : ''}`}>
