@@ -34,45 +34,46 @@ const generarPlantillaHTML = (nombre, codigo) => `
 const enviarCodigoVerificacion = async (correoDestino, nombre, codigo) => {
     const asunto = `${codigo} es tu código de verificación de CeresIA`;
     const html = generarPlantillaHTML(nombre, codigo);
-    const resendKey = (process.env.RESEND_API_KEY || '').trim();
+    const brevoKey = (process.env.BREVO_API_KEY || '').trim();
+    const brevoSender = (process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER || '').trim();
 
-    // 1. Prioridad en producción (Render): envío vía API HTTPS de Resend (no bloqueado por firewall SMTP)
-    if (resendKey) {
+    // 1. Producción (Render): envío vía API HTTPS de Brevo a CUALQUIER destinatario sin dominio propio
+    if (brevoKey && brevoSender) {
         try {
-            const response = await fetch('https://api.resend.com/emails', {
+            const response = await fetch('https://api.brevo.com/v3/smtp/email', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${resendKey}`,
-                    'Content-Type': 'application/json'
+                    'api-key': brevoKey,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    from: 'CeresIA AgroTech <onboarding@resend.dev>',
-                    to: [correoDestino],
+                    sender: { name: 'CeresIA AgroTech', email: brevoSender },
+                    to: [{ email: correoDestino, name: nombre }],
                     subject: asunto,
-                    html
+                    htmlContent: html
                 })
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                console.error('❌ Error API Resend:', data);
+                console.error('❌ Error API Brevo:', data);
                 return false;
             }
 
-            console.log(`✅ Correo enviado vía Resend a ${correoDestino} (ID: ${data.id})`);
+            console.log(`✅ Correo enviado vía Brevo a ${correoDestino} (ID: ${data.messageId})`);
             return true;
         } catch (error) {
-            console.error('❌ Error de red llamando a Resend:', error.message);
+            console.error('❌ Error de red llamando a Brevo:', error.message);
             return false;
         }
     }
 
-    // 2. Respaldo en entorno local: envío vía Gmail SMTP con Nodemailer
+    // 2. Respaldo local: Gmail SMTP con Nodemailer
     const transporter = crearTransporter();
-
     if (!transporter) {
-        console.warn('⚠️ Falta configurar RESEND_API_KEY o EMAIL_USER/EMAIL_PASS');
+        console.warn('⚠️ Falta configurar BREVO_API_KEY o EMAIL_USER/EMAIL_PASS');
         console.log(`📧 [Modo local] Código para ${correoDestino}: ${codigo}`);
         return false;
     }
@@ -85,10 +86,10 @@ const enviarCodigoVerificacion = async (correoDestino, nombre, codigo) => {
             html
         });
 
-        console.log(`✅ Correo real enviado vía SMTP a ${correoDestino} (ID: ${info.messageId})`);
+        console.log(`✅ Correo enviado vía SMTP a ${correoDestino} (ID: ${info.messageId})`);
         return true;
     } catch (error) {
-        console.error('❌ Error real enviando correo SMTP:', error.message);
+        console.error('❌ Error enviando correo SMTP:', error.message);
         return false;
     }
 };
