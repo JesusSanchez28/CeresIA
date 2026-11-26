@@ -2,12 +2,22 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import api from '../services/api';
 import '../styles/auth.css';
 
-/* Iconos SVG vectoriales (sin emojis) */
+/* Nuevo logo oficial de CERES IA (ubicado en frontend/public/logo.png) */
 const LeafLogoIcon = () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-    </svg>
+    <img
+        src="/logo.png"
+        alt="CERES IA"
+        onError={(e) => {
+            e.currentTarget.style.display = 'none';
+        }}
+        style={{
+            width: '34px',
+            height: '34px',
+            objectFit: 'contain',
+            borderRadius: '8px',
+            display: 'block'
+        }}
+    />
 );
 
 const SwapArrowIcon = () => (
@@ -42,6 +52,20 @@ const ArrowRightIcon = () => (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 12h14" />
         <path d="m12 5 7 7-7 7" />
+    </svg>
+);
+
+const ShieldCheckIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+        <path d="m9 12 2 2 4-4" />
+    </svg>
+);
+
+const CloseIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
 );
 
@@ -112,6 +136,8 @@ const AuthForm = ({ onLoginSuccess }) => {
     });
     const [codigoOTP, setCodigoOTP] = useState('');
     const [recordarSesion, setRecordarSesion] = useState(true);
+    const [aceptaTerminos, setAceptaTerminos] = useState(false);
+    const [modalTerminosAbierto, setModalTerminosAbierto] = useState(false);
     const [mostrarPassword, setMostrarPassword] = useState(false);
     const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
     const [error, setError] = useState(null);
@@ -134,6 +160,16 @@ const AuthForm = ({ onLoginSuccess }) => {
         (vista === 'register' || vista === 'reset') &&
         formData.confirmarPassword.length > 0 &&
         formData.password !== formData.confirmarPassword;
+
+    // Cerrar modal con tecla Escape
+    useEffect(() => {
+        if (!modalTerminosAbierto) return;
+        const manejarEscape = (e) => {
+            if (e.key === 'Escape') setModalTerminosAbierto(false);
+        };
+        window.addEventListener('keydown', manejarEscape);
+        return () => window.removeEventListener('keydown', manejarEscape);
+    }, [modalTerminosAbierto]);
 
     const guardarSesion = (token, usuario) => {
         const storage = recordarSesion ? localStorage : sessionStorage;
@@ -211,6 +247,11 @@ const AuthForm = ({ onLoginSuccess }) => {
 
         if (formData.password !== formData.confirmarPassword) {
             setError('Las contraseñas no coinciden.');
+            return;
+        }
+
+        if (!aceptaTerminos) {
+            setError('Debes aceptar los Términos, Condiciones y la Política de Tratamiento de Datos para crear tu cuenta.');
             return;
         }
 
@@ -423,7 +464,7 @@ const AuthForm = ({ onLoginSuccess }) => {
 
                 <div className="ceres-visual-content">
                     <div className="ceres-brand">
-                        <div className="ceres-brand-mark">
+                        <div className="ceres-brand-mark" style={{ background: '#FFFFFF', padding: '4px' }}>
                             <LeafLogoIcon />
                         </div>
                         <div>
@@ -470,7 +511,7 @@ const AuthForm = ({ onLoginSuccess }) => {
                     </div>
 
                     <div className="ceres-visual-footer">
-                        <span>Sistema de Diagnóstico y Viabilidad de Cultivos</span>
+                        <span>Protegido bajo Ley 1581 de 2012 (Habeas Data) · Colombia</span>
                         <span style={{ color: 'var(--ceres-gold)', fontWeight: 600 }}>CERES IA</span>
                     </div>
                 </div>
@@ -494,7 +535,7 @@ const AuthForm = ({ onLoginSuccess }) => {
                 <div className="ceres-form-shell">
                     <div className="ceres-form-container" key={vista}>
                         <div className="ceres-mobile-brand">
-                            <div className="ceres-brand-mark">
+                            <div className="ceres-brand-mark" style={{ background: '#FFFFFF', padding: '4px' }}>
                                 <LeafLogoIcon />
                             </div>
                             <div>
@@ -866,10 +907,54 @@ const AuthForm = ({ onLoginSuccess }) => {
                                         )}
                                     </div>
 
+                                    {/* BLOQUE COMPACTO DE CONSENTIMIENTO QUE ABRE VENTANA FLOTANTE */}
+                                    <div
+                                        style={{
+                                            margin: '0.55rem 0 1.05rem',
+                                            display: 'flex',
+                                            alignItems: 'flex-start',
+                                            gap: '0.55rem'
+                                        }}
+                                    >
+                                        <input
+                                            id="reg-terminos"
+                                            type="checkbox"
+                                            className="ceres-checkbox"
+                                            checked={aceptaTerminos}
+                                            onChange={(e) => setAceptaTerminos(e.target.checked)}
+                                            style={{ marginTop: '2px', flexShrink: 0, cursor: 'pointer' }}
+                                            required
+                                        />
+                                        <div style={{ fontSize: '0.8rem', lineHeight: 1.45, color: '#3B4D3F' }}>
+                                            <label htmlFor="reg-terminos" style={{ cursor: 'pointer' }}>
+                                                Acepto los <strong>Términos y Condiciones</strong> y la Política de Datos.
+                                            </label>{' '}
+                                            <button
+                                                type="button"
+                                                onClick={() => setModalTerminosAbierto(true)}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    outline: 'none',
+                                                    boxShadow: 'none',
+                                                    padding: 0,
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: 700,
+                                                    color: '#183D2B',
+                                                    textDecoration: 'underline',
+                                                    textUnderlineOffset: '3px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Ver más
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     <button
                                         type="submit"
                                         className="ceres-btn-primary"
-                                        disabled={loading || passwordsNoCoinciden}
+                                        disabled={loading || passwordsNoCoinciden || !aceptaTerminos}
                                     >
                                         {loading ? (
                                             <>
@@ -922,8 +1007,16 @@ const AuthForm = ({ onLoginSuccess }) => {
                                         )}
                                     </div>
 
-                                    <p className="ceres-legal-note">
-                                        Al crear tu cuenta aceptas el procesamiento de diagnósticos botánicos y telemetría agroclimática en CERES IA.
+                                    <p
+                                        style={{
+                                            marginTop: '0.85rem',
+                                            textAlign: 'center',
+                                            fontSize: '0.72rem',
+                                            color: '#6C7D70',
+                                            lineHeight: 1.4
+                                        }}
+                                    >
+                                        Protegido bajo <strong>Ley 1581 de 2012</strong> (Habeas Data) · Colombia
                                     </p>
                                 </form>
 
@@ -1223,6 +1316,216 @@ const AuthForm = ({ onLoginSuccess }) => {
                     </div>
                 </div>
             </main>
+
+            {/* VENTANA FLOTANTE (MODAL) DE TÉRMINOS, CONDICIONES Y MARCO LEGAL */}
+            {modalTerminosAbierto && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="ceres-modal-legal-title"
+                    onClick={() => setModalTerminosAbierto(false)}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 9999,
+                        background: 'rgba(15, 34, 24, 0.58)',
+                        backdropFilter: 'blur(5px)',
+                        WebkitBackdropFilter: 'blur(5px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '1rem'
+                    }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            width: '100%',
+                            maxWidth: '460px',
+                            maxHeight: '86vh',
+                            background: '#FFFFFF',
+                            borderRadius: '20px',
+                            boxShadow: '0 24px 60px rgba(10, 28, 19, 0.32)',
+                            border: '1px solid #DDE7DF',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden'
+                        }}
+                    >
+                        {/* Cabecera del Modal */}
+                        <div
+                            style={{
+                                padding: '1.25rem 1.4rem 1rem',
+                                borderBottom: '1px solid #EBF1EC',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: '0.75rem',
+                                background: 'linear-gradient(180deg, #F5F9F6 0%, #FFFFFF 100%)'
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                                <div
+                                    style={{
+                                        width: '38px',
+                                        height: '38px',
+                                        borderRadius: '11px',
+                                        background: '#E6F0E8',
+                                        color: '#183D2B',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexShrink: 0
+                                    }}
+                                >
+                                    <ShieldCheckIcon />
+                                </div>
+                                <div>
+                                    <h3
+                                        id="ceres-modal-legal-title"
+                                        style={{
+                                            margin: 0,
+                                            fontSize: '1.05rem',
+                                            fontWeight: 800,
+                                            color: '#183D2B',
+                                            letterSpacing: '-0.01em'
+                                        }}
+                                    >
+                                        Términos y Condiciones
+                                    </h3>
+                                    <span style={{ fontSize: '0.74rem', color: '#5E7163' }}>
+                                        Política de Datos y Marco Legal · CERES IA
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setModalTerminosAbierto(false)}
+                                aria-label="Cerrar ventana"
+                                style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    border: '1px solid #E0E8E2',
+                                    background: '#F7FAF8',
+                                    color: '#3B4D3F',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <CloseIcon />
+                            </button>
+                        </div>
+
+                        {/* Cuerpo desplazable del Modal */}
+                        <div
+                            style={{
+                                padding: '1.15rem 1.4rem',
+                                overflowY: 'auto',
+                                fontSize: '0.82rem',
+                                lineHeight: 1.58,
+                                color: '#334438'
+                            }}
+                        >
+                            <div style={{ marginBottom: '1rem' }}>
+                                <div style={{ fontWeight: 700, color: '#183D2B', marginBottom: '0.3rem', fontSize: '0.85rem' }}>
+                                    1. Datos que requerimos y finalidad
+                                </div>
+                                <p style={{ margin: 0 }}>
+                                    Para brindarte diagnósticos fitosanitarios y recomendaciones de siembra, <strong>CERES IA</strong> solicita tu nombre completo, correo electrónico, perfil agrícola, tipo de suelo preferido, capturas fotográficas de plantas/semillas y ubicación GPS opcional. Estos datos se utilizan exclusivamente para operar tu cuenta, generar análisis con IA y acreditar tu autoría en el catálogo botánico.
+                                </p>
+                            </div>
+
+                            <div style={{ marginBottom: '1rem' }}>
+                                <div style={{ fontWeight: 700, color: '#183D2B', marginBottom: '0.45rem', fontSize: '0.85rem' }}>
+                                    2. Marco Legal Vigente (Colombia)
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                                    <div style={{ background: '#F4F8F5', padding: '0.55rem 0.75rem', borderRadius: '10px', borderLeft: '3px solid #183D2B' }}>
+                                        <strong style={{ color: '#183D2B' }}>Ley 1581 de 2012 y Decreto 1377 de 2013 (Habeas Data):</strong>{' '}
+                                        Protege tu derecho a conocer, actualizar, rectificar y solicitar la supresión de tus datos personales en cualquier momento.
+                                    </div>
+                                    <div style={{ background: '#F4F8F5', padding: '0.55rem 0.75rem', borderRadius: '10px', borderLeft: '3px solid #2D6A4F' }}>
+                                        <strong style={{ color: '#183D2B' }}>Ley 527 de 1999 (Consentimiento Electrónico):</strong>{' '}
+                                        Otorga plena validez jurídica y probatoria a la aceptación digital realizada mediante verificación OTP y esta ventana de consentimiento.
+                                    </div>
+                                    <div style={{ background: '#F4F8F5', padding: '0.55rem 0.75rem', borderRadius: '10px', borderLeft: '3px solid #40916C' }}>
+                                        <strong style={{ color: '#183D2B' }}>Ley 1273 de 2009 y Ley 23 de 1982:</strong>{' '}
+                                        Garantiza la seguridad criptográfica de tus credenciales y respeta los derechos de autor sobre las especies que escanees y aportes al catálogo.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div style={{ fontWeight: 700, color: '#183D2B', marginBottom: '0.3rem', fontSize: '0.85rem' }}>
+                                    3. Alcance del diagnóstico por IA
+                                </div>
+                                <p style={{ margin: 0, color: '#526557' }}>
+                                    Los resultados emitidos por el motor de visión artificial tienen carácter orientativo de apoyo técnico y no sustituyen el dictamen presencial de un Ingeniero Agrónomo certificado.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Botones inferiores estilo píldora (Cancelar / Aceptar) */}
+                        <div
+                            style={{
+                                padding: '0.95rem 1.4rem 1.2rem',
+                                borderTop: '1px solid #EBF1EC',
+                                background: '#FAFDFB',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-end',
+                                gap: '0.65rem'
+                            }}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setAceptaTerminos(false);
+                                    setModalTerminosAbierto(false);
+                                }}
+                                style={{
+                                    padding: '0.58rem 1.2rem',
+                                    borderRadius: '999px',
+                                    border: '1.5px solid #C8D6CB',
+                                    background: '#FFFFFF',
+                                    color: '#3B4D3F',
+                                    fontSize: '0.82rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setAceptaTerminos(true);
+                                    setError(null);
+                                    setModalTerminosAbierto(false);
+                                }}
+                                style={{
+                                    padding: '0.58rem 1.35rem',
+                                    borderRadius: '999px',
+                                    border: 'none',
+                                    background: '#183D2B',
+                                    color: '#FFFFFF',
+                                    fontSize: '0.82rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    boxShadow: '0 6px 16px rgba(24, 61, 43, 0.22)'
+                                }}
+                            >
+                                Aceptar y continuar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

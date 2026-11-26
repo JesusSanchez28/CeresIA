@@ -17,6 +17,13 @@ const SproutIcon = () => (
     </svg>
 );
 
+const UserScanIcon = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+    </svg>
+);
+
 function ListaPlantas() {
     const [plantas, setPlantas] = useState([]);
     const [busqueda, setBusqueda] = useState('');
@@ -35,8 +42,16 @@ function ListaPlantas() {
             .finally(() => setCargando(false));
     }, []);
 
+    const obtenerNombrePlanta = (p) =>
+        p.nombre_comun || p.nombre || p.especie || p.nombre_planta || 'Especie botánica identificada';
+
+    const obtenerAutorEscaneo = (p) =>
+        p.usuario_nombre || p.nombre_usuario || p.escaneado_por || 'Base Agronómica CERES IA';
+
     const filtradas = plantas.filter((p) => {
-        const texto = `${p.nombre_comun || ''} ${p.nombre_cientifico || ''} ${p.tipo || ''} ${p.descripcion || ''}`.toLowerCase();
+        const nombrePlanta = obtenerNombrePlanta(p);
+        const autor = obtenerAutorEscaneo(p);
+        const texto = `${nombrePlanta} ${p.nombre_cientifico || ''} ${p.tipo || ''} ${p.descripcion || ''} ${autor}`.toLowerCase();
         const coincideTexto = texto.includes(busqueda.toLowerCase());
         if (sueloFiltro === 'todos') return coincideTexto;
         return coincideTexto && (p.tipo_suelo_ideal || '').toLowerCase().includes(sueloFiltro.toLowerCase());
@@ -48,7 +63,7 @@ function ListaPlantas() {
                 <div>
                     <h1 className="ceres-section-title">Catálogo Botánico de Referencia</h1>
                     <p className="ceres-section-subtitle">
-                        Base de conocimiento agronómico con clasificación taxonómica, rangos térmicos y sustratos ideales por especie.
+                        Base de conocimiento agronómico con clasificación taxonómica, rangos térmicos, sustratos ideales y trazabilidad de escaneo.
                     </p>
                 </div>
             </div>
@@ -63,7 +78,7 @@ function ListaPlantas() {
                     <input
                         type="text"
                         className="ceres-search-input"
-                        placeholder="Filtrar por nombre común, científico o tipo..."
+                        placeholder="Filtrar por planta, nombre científico, tipo o usuario..."
                         value={busqueda}
                         onChange={(e) => setBusqueda(e.target.value)}
                     />
@@ -123,10 +138,10 @@ function ListaPlantas() {
                                                     margin: 0
                                                 }}
                                             >
-                                                {planta.nombre_comun}
+                                                {obtenerNombrePlanta(planta)}
                                             </h3>
                                             {planta.nombre_cientifico && (
-                                                <em style={{ fontSize: '0.78rem', color: 'var(--ceres-muted)' }}>
+                                                <em style={{ fontSize: '0.78rem', color: 'var(--ceres-muted)', display: 'block' }}>
                                                     {planta.nombre_cientifico}
                                                 </em>
                                             )}
@@ -140,7 +155,7 @@ function ListaPlantas() {
                                     )}
                                 </div>
 
-                                <p style={{ fontSize: '0.84rem', lineHeight: 1.52, color: 'var(--ceres-charcoal)', margin: 0 }}>
+                                <p style={{ fontSize: '0.84rem', lineHeight: 1.52, color: 'var(--ceres-charcoal)', margin: '0 0 0.75rem' }}>
                                     {planta.descripcion || 'Cultivo registrado en la base agronómica de CERES IA.'}
                                 </p>
                             </div>
@@ -157,6 +172,26 @@ function ListaPlantas() {
                                         {planta.tipo_suelo_ideal}
                                     </span>
                                 )}
+                            </div>
+
+                            {/* PIE DE TARJETA: USUARIO QUE ESCANEÓ */}
+                            <div
+                                style={{
+                                    marginTop: '0.8rem',
+                                    paddingTop: '0.6rem',
+                                    borderTop: '1px solid #E5ECE6',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    gap: '0.5rem',
+                                    fontSize: '0.76rem',
+                                    color: 'var(--ceres-muted)'
+                                }}
+                            >
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600, color: 'var(--ceres-forest)' }}>
+                                    <UserScanIcon />
+                                    Escaneado por: {obtenerAutorEscaneo(planta)}
+                                </span>
                             </div>
                         </article>
                     ))}

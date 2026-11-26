@@ -8,12 +8,22 @@ import PerfilUsuario from './components/PerfilUsuario';
 import api from './services/api';
 import './styles/dashboard.css';
 
-/* Iconos SVG vectoriales (sin emojis) */
+/* Nuevo logo oficial de CERES IA (ubicado en frontend/public/logo.png) */
 const LeafBrandIcon = () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-    </svg>
+    <img
+        src="/logo.png"
+        alt="CERES IA"
+        onError={(e) => {
+            e.currentTarget.style.display = 'none';
+        }}
+        style={{
+            width: '32px',
+            height: '32px',
+            objectFit: 'contain',
+            borderRadius: '8px',
+            display: 'block'
+        }}
+    />
 );
 
 const HomeIcon = () => (
@@ -266,7 +276,7 @@ function App() {
             <aside className="ceres-sidebar">
                 <div>
                     <div className="ceres-sidebar-header">
-                        <div className="ceres-logo-box">
+                        <div className="ceres-logo-box" style={{ background: '#FFFFFF', padding: '4px' }}>
                             <LeafBrandIcon />
                         </div>
                         <div>
@@ -641,6 +651,49 @@ function App() {
                                     </div>
                                 </div>
                             </section>
+
+                            {/* PIE DE PÁGINA LEGAL (EXCLUSIVO DEL INICIO) */}
+                            <footer
+                                style={{
+                                    marginTop: '2.5rem',
+                                    marginBottom: '4.5rem',
+                                    padding: '1rem 1.25rem',
+                                    borderRadius: '14px',
+                                    border: '1px solid #DCE6DD',
+                                    background: '#FFFFFF',
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    gap: '0.75rem',
+                                    fontSize: '0.75rem',
+                                    color: '#526557'
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <strong style={{ color: '#183D2B' }}>CERES IA</strong>
+                                    <span>·</span>
+                                    <span>Diagnóstico Botánico y Agroclimático</span>
+                                </div>
+
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                                    <span style={{ background: '#EDF4EE', color: '#183D2B', padding: '2px 8px', borderRadius: '999px', fontWeight: 600, fontSize: '0.7rem' }}>
+                                        Ley 1581 de 2012 · Habeas Data
+                                    </span>
+                                    <span style={{ background: '#EDF4EE', color: '#183D2B', padding: '2px 8px', borderRadius: '999px', fontWeight: 600, fontSize: '0.7rem' }}>
+                                        Decreto 1377 de 2013
+                                    </span>
+                                    <span style={{ background: '#EDF4EE', color: '#183D2B', padding: '2px 8px', borderRadius: '999px', fontWeight: 600, fontSize: '0.7rem' }}>
+                                        Ley 527 de 1999
+                                    </span>
+                                    <span style={{ background: '#EDF4EE', color: '#183D2B', padding: '2px 8px', borderRadius: '999px', fontWeight: 600, fontSize: '0.7rem' }}>
+                                        Ley 1273 de 2009
+                                    </span>
+                                    <span style={{ background: '#EDF4EE', color: '#183D2B', padding: '2px 8px', borderRadius: '999px', fontWeight: 600, fontSize: '0.7rem' }}>
+                                        Ley 23 de 1982
+                                    </span>
+                                </div>
+                            </footer>
                         </>
                     )}
 
