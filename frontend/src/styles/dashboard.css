@@ -94,6 +94,7 @@
   justify-content: space-between;
   padding: 0.72rem 0.95rem;
   border: none;
+  outline: none;
   border-radius: 12px;
   background: transparent;
   color: rgba(229, 237, 226, 0.8);
@@ -102,6 +103,11 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.18s ease;
+}
+
+.ceres-nav-btn:focus,
+.ceres-nav-btn:focus-visible {
+  outline: none;
 }
 
 .ceres-nav-btn-left {

@@ -1,59 +1,85 @@
 const db = require('../config/db');
 
-const obtenerPlantas = (req, res) => {
+const obtenerCatalogoPlantas = (req, res) => {
     const query = `
         SELECT 
-            p.id_planta_semilla,
-            p.id_planta_semilla AS id,
-            p.nombre_comun,
-            p.nombre_comun AS nombreComun,
-            p.nombre_cientifico,
-            p.nombre_cientifico AS nombreCientifico,
-            p.tipo,
-            p.descripcion,
-            p.temp_min,
-            p.temp_max,
-            p.humedad_min,
-            p.humedad_max,
-            p.tipo_suelo_ideal,
+            ps.id_planta_semilla,
+            ps.nombre_comun,
+            ps.nombre_cientifico,
+            ps.tipo,
+            ps.descripcion,
             COALESCE(
                 (
                     SELECT u.nombre
-                    FROM historial_analisis h
-                    INNER JOIN usuario u ON h.id_usuario = u.id_usuario
-                    WHERE h.id_planta_semilla = p.id_planta_semilla
-                    ORDER BY h.fecha_analisis ASC
+                    FROM analisis_completo ac
+                    JOIN usuario u ON ac.id_usuario = u.id_usuario
+                    WHERE ac.id_planta_semilla = ps.id_planta_semilla
+                    ORDER BY ac.fecha DESC
                     LIMIT 1
                 ),
                 'Base Agronómica CERES IA'
-            ) AS usuario_nombre
-        FROM planta_semilla p
-        ORDER BY p.id_planta_semilla DESC
+            ) AS escaneado_por,
+            COALESCE(
+                (
+                    SELECT ac.tipo_suelo
+                    FROM analisis_completo ac
+                    WHERE ac.id_planta_semilla = ps.id_planta_semilla
+                    ORDER BY ac.fecha DESC
+                    LIMIT 1
+                ),
+                'Franco arcilloso'
+            ) AS tipo_suelo_ideal,
+            (
+                SELECT ROUND(MIN(ac.temperatura))
+                FROM analisis_completo ac
+                WHERE ac.id_planta_semilla = ps.id_planta_semilla
+            ) AS temp_min,
+            (
+                SELECT ROUND(MAX(ac.temperatura))
+                FROM analisis_completo ac
+                WHERE ac.id_planta_semilla = ps.id_planta_semilla
+            ) AS temp_max,
+            (
+                SELECT ROUND(MIN(ac.humedad))
+                FROM analisis_completo ac
+                WHERE ac.id_planta_semilla = ps.id_planta_semilla
+            ) AS humedad_min,
+            (
+                SELECT ROUND(MAX(ac.humedad))
+                FROM analisis_completo ac
+                WHERE ac.id_planta_semilla = ps.id_planta_semilla
+            ) AS humedad_max
+        FROM planta_semilla ps
+        ORDER BY ps.id_planta_semilla DESC
     `;
 
     db.query(query, (err, results) => {
         if (err) {
-            console.error('Error al obtener plantas:', err);
-            // Respaldo seguro por si alguna columna opcional difiere en la tabla
-            const fallbackQuery = `
-                SELECT 
-                    p.*,
-                    p.id_planta_semilla AS id,
-                    p.nombre_comun AS nombreComun,
-                    p.nombre_cientifico AS nombreCientifico,
-                    'Base Agronómica CERES IA' AS usuario_nombre
-                FROM planta_semilla p
-                ORDER BY p.id_planta_semilla DESC
-            `;
-            return db.query(fallbackQuery, (errFallback, rowsFallback) => {
-                if (errFallback) {
-                    return res.status(500).json({ error: 'Error al consultar el catálogo de plantas' });
-                }
-                res.json(rowsFallback);
-            });
+            console.error('Error al consultar catálogo botánico:', err);
+            return res.status(500).json({ error: 'Error al consultar el catálogo de plantas.' });
         }
-        res.json(results);
+
+        const plantasFormateadas = results.map((p) => {
+            const tMin = p.temp_min !== null ? Number(p.temp_min) : 14;
+            const tMax = p.temp_max !== null ? Number(p.temp_max) : 24;
+            const hMin = p.humedad_min !== null ? Number(p.humedad_min) : 55;
+            const hMax = p.humedad_max !== null ? Number(p.humedad_max) : 80;
+
+            return {
+                ...p,
+                temp_min: tMin === tMax ? Math.max(5, tMin - 3) : tMin,
+                temp_max: tMin === tMax ? tMax + 4 : tMax,
+                humedad_min: hMin === hMax ? Math.max(25, hMin - 10) : hMin,
+                humedad_max: hMin === hMax ? Math.min(98, hMax + 10) : hMax
+            };
+        });
+
+        res.json(plantasFormateadas);
     });
 };
 
-module.exports = { obtenerPlantas };
+module.exports = {
+    obtenerCatalogoPlantas,
+    obtenerPlantas: obtenerCatalogoPlantas,
+    listarPlantas: obtenerCatalogoPlantas
+};
