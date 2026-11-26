@@ -364,7 +364,7 @@ function App() {
                         <div>
                             <strong style={{ display: 'block', fontSize: '0.78rem' }}>Visión IA Operativa</strong>
                             <span style={{ fontSize: '0.71rem', color: 'var(--ceres-sage)' }}>
-                                Base MySQL sincronizada
+                                Funcionando Correctamente
                             </span>
                         </div>
                     </div>

@@ -33,7 +33,7 @@
 
 ## 📂 Estructura del Proyecto
 
-```text
+
 CeresIA/
 ├── backend/
 │   ├── src/
@@ -52,12 +52,15 @@ CeresIA/
 │   │   └── App.jsx          # Enrutamiento de vistas y navegación responsiva
 │   └── package.json
 └── ceresia_backup.sql       # Esquema DDL, relaciones y procedimiento almacenado
-⚙️ Instalación y Ejecución Local
-1. Clonar el repositorio
+
+---
+
+## ⚙️ Instalación y Ejecución Local
+1. **Clonar el repositorio**
 Bash
 git clone [https://github.com/JesusSanchez28/CeresIA.git](https://github.com/JesusSanchez28/CeresIA.git)
 cd CeresIA
-2. Configurar y ejecutar el Backend
+2. **Configurar y ejecutar el Backend**
 Bash
 cd backend
 npm install
@@ -76,11 +79,12 @@ GROQ_API_KEY=tu_api_key_groq
 OPENWEATHER_API_KEY=tu_api_key_openweather
 GOOGLE_CLIENT_ID=tu_client_id_google
 BREVO_API_KEY=tu_api_key_brevo
+
 Inicia el servidor:
 
 Bash
 npx nodemon server.js
-3. Configurar y ejecutar el Frontend
+3. **Configurar y ejecutar el Frontend**
 Bash
 cd ../frontend
 npm install
@@ -93,10 +97,12 @@ Inicia la aplicación:
 
 Bash
 npm run dev
-👨‍💻 Autores
+
+## 👨‍💻 Autores
+
 Franklin Jesús Sánchez Ruiz
 Luis Gerardo Rico Camelo
 
-Tecnólogo en Análisis y Desarrollo / Técnico en Programación de Software — SENA (CBA Facatativá)
+**Tecnólogo en Análisis y Desarrollo / Técnico en Programación de Software — SENA (CBA Facatativá)**
 
-GitHub: @JesusSanchez28
+**GitHub: @JesusSanchez28**

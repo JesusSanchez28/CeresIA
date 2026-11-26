@@ -3,9 +3,15 @@
   "name": "CERES IA — Agro-Inteligencia",
   "icons": [
     {
-      "src": "/ceres-icon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any",
+      "src": "/logo.png?v=2",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png?v=2",
+      "type": "image/png",
+      "sizes": "512x512",
       "purpose": "any maskable"
     }
   ],
