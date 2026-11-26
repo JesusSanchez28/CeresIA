@@ -10,7 +10,7 @@ const conTimeout = (promesa, ms, mensajeError) => {
     ]);
 };
 
-// Detecta y guarda en caché el mejor modelo de texto activo en tu cuenta de Groq
+// Detecta y guarda en caché el mejor modelo de texto activo en Groq
 let groqTextModelCache = null;
 const obtenerModeloTextoGroq = async () => {
     if (groqTextModelCache) return groqTextModelCache;
@@ -79,19 +79,24 @@ const INTENTOS_GEMINI = [
     'gemini-3.8-flash'
 ];
 
-// 1. ANÁLISIS DE IMAGEN (Especie, estado fitosanitario, viabilidad climática y cuidados)
+// 1. ANÁLISIS DE IMAGEN (Especie, ficha agronómica real, estado fitosanitario y viabilidad)
 const analizarImagenPlanta = async (base64Image, mimeType = 'image/jpeg', temperatura = 18, humedad = 70) => {
     if (!process.env.GEMINI_API_KEY) {
         throw new Error('Falta GEMINI_API_KEY en el archivo .env del backend.');
     }
 
     const prompt = `Actúa como ingeniero agrónomo y botánico experto. Analiza la imagen adjunta y las condiciones climáticas actuales (Temperatura: ${temperatura}°C, Humedad relativa: ${humedad}%).
-Responde ÚNICAMENTE un objeto JSON válido con estas 7 claves:
+Responde ÚNICAMENTE un objeto JSON válido con estas 12 claves:
 - "es_planta": booleano (true si muestra material vegetal real: planta, hoja, flor, fruto, cultivo o semilla; false si muestra personas, objetos, animales o cosas).
 - "nombre_comun": string (nombre común de la planta/semilla en español o "No aplica").
 - "nombre_cientifico": string (nombre científico o "No aplica").
 - "tipo": string ("Planta", "Flor", "Semilla", "Grano", "Tubérculo", "Frutal" o "No aplica").
-- "descripcion": string (breve descripción agronómica en español en máximo 15 palabras).
+- "descripcion": string (ficha botánica y agronómica objetiva de la especie en máximo 16 palabras; describe la planta/cultivo en sí, nunca el empaque, maceta o fondo de la foto).
+- "suelo_ideal": string (elige exactamente uno entre: "Franco arcilloso", "Franco arenoso", "Franco limoso", "Orgánico / Negro").
+- "temp_min": entero (temperatura mínima óptima de cultivo en °C para esta especie, ej. 12).
+- "temp_max": entero (temperatura máxima óptima de cultivo en °C para esta especie, ej. 24).
+- "humedad_min": entero (humedad relativa mínima óptima en %, ej. 55).
+- "humedad_max": entero (humedad relativa máxima óptima en %, ej. 80).
 - "diagnostico": string (si es_planta es false indica qué se observa y pide subir una planta o semilla; si es true redacta un informe práctico en español en 1 párrafo que incluya: 1) Estado sanitario visible de la planta/semilla, 2) Viabilidad frente al clima actual de ${temperatura}°C y ${humedad}% humedad, y 3) Cuidados clave de riego, luz, suelo y prevención de plagas).
 - "es_apto": booleano (true si el clima ${temperatura}°C y ${humedad}% humedad es favorable para esta especie, false en caso contrario).`;
 
@@ -115,10 +120,28 @@ Responde ÚNICAMENTE un objeto JSON válido con estas 7 claves:
                                 nombre_cientifico: { type: Type.STRING },
                                 tipo: { type: Type.STRING },
                                 descripcion: { type: Type.STRING },
+                                suelo_ideal: { type: Type.STRING },
+                                temp_min: { type: Type.INTEGER },
+                                temp_max: { type: Type.INTEGER },
+                                humedad_min: { type: Type.INTEGER },
+                                humedad_max: { type: Type.INTEGER },
                                 diagnostico: { type: Type.STRING },
                                 es_apto: { type: Type.BOOLEAN }
                             },
-                            required: ['es_planta', 'nombre_comun', 'nombre_cientifico', 'tipo', 'descripcion', 'diagnostico', 'es_apto']
+                            required: [
+                                'es_planta',
+                                'nombre_comun',
+                                'nombre_cientifico',
+                                'tipo',
+                                'descripcion',
+                                'suelo_ideal',
+                                'temp_min',
+                                'temp_max',
+                                'humedad_min',
+                                'humedad_max',
+                                'diagnostico',
+                                'es_apto'
+                            ]
                         }
                     }
                 }),

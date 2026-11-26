@@ -9,17 +9,7 @@ const obtenerCatalogoPlantas = (req, res) => {
             ps.tipo,
             ps.descripcion,
             COALESCE(
-                (
-                    SELECT u.nombre
-                    FROM analisis_completo ac
-                    JOIN usuario u ON ac.id_usuario = u.id_usuario
-                    WHERE ac.id_planta_semilla = ps.id_planta_semilla
-                    ORDER BY ac.fecha DESC
-                    LIMIT 1
-                ),
-                'Base Agronómica CERES IA'
-            ) AS escaneado_por,
-            COALESCE(
+                NULLIF(ps.suelo_ideal, ''),
                 (
                     SELECT ac.tipo_suelo
                     FROM analisis_completo ac
@@ -29,26 +19,21 @@ const obtenerCatalogoPlantas = (req, res) => {
                 ),
                 'Franco arcilloso'
             ) AS tipo_suelo_ideal,
-            (
-                SELECT ROUND(MIN(ac.temperatura))
-                FROM analisis_completo ac
-                WHERE ac.id_planta_semilla = ps.id_planta_semilla
-            ) AS temp_min,
-            (
-                SELECT ROUND(MAX(ac.temperatura))
-                FROM analisis_completo ac
-                WHERE ac.id_planta_semilla = ps.id_planta_semilla
-            ) AS temp_max,
-            (
-                SELECT ROUND(MIN(ac.humedad))
-                FROM analisis_completo ac
-                WHERE ac.id_planta_semilla = ps.id_planta_semilla
-            ) AS humedad_min,
-            (
-                SELECT ROUND(MAX(ac.humedad))
-                FROM analisis_completo ac
-                WHERE ac.id_planta_semilla = ps.id_planta_semilla
-            ) AS humedad_max
+            COALESCE(ps.temp_min, 14) AS temp_min,
+            COALESCE(ps.temp_max, 24) AS temp_max,
+            COALESCE(ps.humedad_min, 55) AS humedad_min,
+            COALESCE(ps.humedad_max, 80) AS humedad_max,
+            COALESCE(
+                (
+                    SELECT u.nombre
+                    FROM analisis_completo ac
+                    JOIN usuario u ON ac.id_usuario = u.id_usuario
+                    WHERE ac.id_planta_semilla = ps.id_planta_semilla
+                    ORDER BY ac.fecha DESC
+                    LIMIT 1
+                ),
+                'Base Agronómica CERES IA'
+            ) AS escaneado_por
         FROM planta_semilla ps
         ORDER BY ps.id_planta_semilla DESC
     `;
@@ -58,23 +43,7 @@ const obtenerCatalogoPlantas = (req, res) => {
             console.error('Error al consultar catálogo botánico:', err);
             return res.status(500).json({ error: 'Error al consultar el catálogo de plantas.' });
         }
-
-        const plantasFormateadas = results.map((p) => {
-            const tMin = p.temp_min !== null ? Number(p.temp_min) : 14;
-            const tMax = p.temp_max !== null ? Number(p.temp_max) : 24;
-            const hMin = p.humedad_min !== null ? Number(p.humedad_min) : 55;
-            const hMax = p.humedad_max !== null ? Number(p.humedad_max) : 80;
-
-            return {
-                ...p,
-                temp_min: tMin === tMax ? Math.max(5, tMin - 3) : tMin,
-                temp_max: tMin === tMax ? tMax + 4 : tMax,
-                humedad_min: hMin === hMax ? Math.max(25, hMin - 10) : hMin,
-                humedad_max: hMin === hMax ? Math.min(98, hMax + 10) : hMax
-            };
-        });
-
-        res.json(plantasFormateadas);
+        res.json(results);
     });
 };
 

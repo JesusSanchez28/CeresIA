@@ -2,6 +2,32 @@ const db = require('../config/db');
 const { analizarImagenPlanta, recomendarCultivosPorClima } = require('../services/geminiService');
 const { obtenerClimaPorCoordenadas } = require('../services/climaService');
 
+// Auto-migración limpia sin advertencias de sintaxis en MySQL 8
+const columnasCatalogo = [
+    { nombre: 'suelo_ideal', definicion: "VARCHAR(100) DEFAULT 'Franco arcilloso'" },
+    { nombre: 'temp_min', definicion: 'INT DEFAULT 12' },
+    { nombre: 'temp_max', definicion: 'INT DEFAULT 25' },
+    { nombre: 'humedad_min', definicion: 'INT DEFAULT 50' },
+    { nombre: 'humedad_max', definicion: 'INT DEFAULT 80' }
+];
+
+columnasCatalogo.forEach(({ nombre, definicion }) => {
+    const checkSql = `
+        SELECT COUNT(*) AS existe
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'planta_semilla'
+          AND COLUMN_NAME = ?
+    `;
+    db.query(checkSql, [nombre], (err, rows) => {
+        if (!err && rows?.[0]?.existe === 0) {
+            db.query(`ALTER TABLE planta_semilla ADD COLUMN ${nombre} ${definicion}`, (alterErr) => {
+                if (alterErr) console.warn(`Aviso columna ${nombre}:`, alterErr.message);
+            });
+        }
+    });
+});
+
 const obtenerClima = async (req, res) => {
     const { lat, lon } = req.query;
     if (!lat || !lon) {
@@ -18,9 +44,9 @@ const obtenerClima = async (req, res) => {
 };
 
 const registrarAnalisis = async (req, res) => {
-    const { 
-        id_usuario, 
-        imagen_base64, 
+    const {
+        id_usuario,
+        imagen_base64,
         mime_type,
         latitud,
         longitud,
@@ -38,7 +64,6 @@ const registrarAnalisis = async (req, res) => {
 
         const resultadoIA = await analizarImagenPlanta(imagen_base64, mime_type || 'image/jpeg', temperatura, humedad);
 
-        // Si la imagen NO corresponde a material vegetal, avisamos sin guardar en BD
         if (resultadoIA.es_planta === false) {
             return res.status(200).json({
                 es_planta: false,
@@ -48,7 +73,7 @@ const registrarAnalisis = async (req, res) => {
         }
 
         const buscarPlantaQuery = 'SELECT id_planta_semilla FROM planta_semilla WHERE LOWER(nombre_comun) = LOWER(?) LIMIT 1';
-        
+
         db.query(buscarPlantaQuery, [resultadoIA.nombre_comun], (err, rows) => {
             if (err) {
                 console.error('Error al buscar planta:', err);
@@ -61,14 +86,14 @@ const registrarAnalisis = async (req, res) => {
 
                 const spQuery = 'CALL sp_registrar_analisis_completo(?, ?, ?, ?, ?, ?, ?, ?, ?)';
                 const values = [
-                    id_usuario || 1, 
-                    idPlantaFinal, 
+                    id_usuario || 1,
+                    idPlantaFinal,
                     ubicacion,
-                    imagen_url, 
-                    resultadoIA.diagnostico, 
-                    tipo_suelo || 'Franco arcilloso', 
-                    temperatura, 
-                    humedad, 
+                    imagen_url,
+                    resultadoIA.diagnostico,
+                    tipo_suelo || resultadoIA.suelo_ideal || 'Franco arcilloso',
+                    temperatura,
+                    humedad,
                     es_apto
                 ];
 
@@ -77,26 +102,57 @@ const registrarAnalisis = async (req, res) => {
                         console.error('Error al ejecutar SP:', errSp);
                         return res.status(500).json({ error: 'Error al guardar el análisis completo' });
                     }
-                    res.status(201).json({ 
+                    res.status(201).json({
                         es_planta: true,
                         mensaje: `¡Identificado: ${resultadoIA.nombre_comun} (${resultadoIA.nombre_cientifico})!`,
                         planta: resultadoIA.nombre_comun,
                         nombre_cientifico: resultadoIA.nombre_cientifico,
                         tipo: resultadoIA.tipo,
                         descripcion: resultadoIA.descripcion,
+                        suelo_ideal: resultadoIA.suelo_ideal,
                         diagnostico: resultadoIA.diagnostico,
                         clima: { ubicacion, temperatura, humedad, es_apto: Boolean(es_apto) }
                     });
                 });
             };
 
+            const sueloIdeal = resultadoIA.suelo_ideal || 'Franco arcilloso';
+            const tMin = Number.isFinite(resultadoIA.temp_min) ? resultadoIA.temp_min : 12;
+            const tMax = Number.isFinite(resultadoIA.temp_max) ? resultadoIA.temp_max : 25;
+            const hMin = Number.isFinite(resultadoIA.humedad_min) ? resultadoIA.humedad_min : 50;
+            const hMax = Number.isFinite(resultadoIA.humedad_max) ? resultadoIA.humedad_max : 80;
+
             if (rows.length > 0) {
-                guardarRegistroCompleto(rows[0].id_planta_semilla);
-            } else {
-                const insertPlantaQuery = 'INSERT INTO planta_semilla (nombre_comun, nombre_cientifico, tipo, descripcion) VALUES (?, ?, ?, ?)';
+                const idExistente = rows[0].id_planta_semilla;
+                const updatePlantaQuery = `
+                    UPDATE planta_semilla
+                    SET descripcion = ?, suelo_ideal = ?, temp_min = ?, temp_max = ?, humedad_min = ?, humedad_max = ?
+                    WHERE id_planta_semilla = ?
+                `;
                 db.query(
-                    insertPlantaQuery, 
-                    [resultadoIA.nombre_comun, resultadoIA.nombre_cientifico, resultadoIA.tipo, resultadoIA.descripcion], 
+                    updatePlantaQuery,
+                    [resultadoIA.descripcion, sueloIdeal, tMin, tMax, hMin, hMax, idExistente],
+                    () => guardarRegistroCompleto(idExistente)
+                );
+            } else {
+                const insertPlantaQuery = `
+                    INSERT INTO planta_semilla
+                    (nombre_comun, nombre_cientifico, tipo, descripcion, suelo_ideal, temp_min, temp_max, humedad_min, humedad_max)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `;
+                db.query(
+                    insertPlantaQuery,
+                    [
+                        resultadoIA.nombre_comun,
+                        resultadoIA.nombre_cientifico,
+                        resultadoIA.tipo,
+                        resultadoIA.descripcion,
+                        sueloIdeal,
+                        tMin,
+                        tMax,
+                        hMin,
+                        hMax
+                    ],
                     (errInsert, insertResult) => {
                         if (errInsert) {
                             console.error('Error al registrar nueva planta:', errInsert);
@@ -180,6 +236,7 @@ const obtenerCompatibilidadZona = async (req, res) => {
         res.status(500).json({ error: error.message || 'No se pudo generar la recomendación agroclimática.' });
     }
 };
+
 const eliminarAnalisis = (req, res) => {
     const { id } = req.params;
     if (!id) {
@@ -197,10 +254,11 @@ const eliminarAnalisis = (req, res) => {
         res.json({ mensaje: 'Análisis eliminado correctamente.' });
     });
 };
-module.exports = { 
+
+module.exports = {
     obtenerClima,
-    registrarAnalisis, 
-    obtenerHistorial, 
+    registrarAnalisis,
+    obtenerHistorial,
     obtenerCompatibilidadZona,
     eliminarAnalisis
 };
