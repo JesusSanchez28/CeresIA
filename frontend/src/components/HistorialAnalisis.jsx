@@ -15,6 +15,16 @@ const LeafIcon = () => (
     </svg>
 );
 
+const FilePdfIcon = () => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" x2="8" y1="13" y2="13" />
+        <line x1="16" x2="8" y1="17" y2="17" />
+        <line x1="10" x2="8" y1="9" y2="9" />
+    </svg>
+);
+
 const TrashIcon = () => (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 6h18" />
@@ -52,6 +62,71 @@ function HistorialAnalisis({ usuario }) {
         } catch {
             setError('No se pudo eliminar el registro seleccionado.');
         }
+    };
+
+    const descargarFichaHistorial = (item) => {
+        const ventana = window.open('', '_blank', 'width=820,height=900');
+        if (!ventana) return;
+
+        const esApto = item.es_apto === 1 || item.es_apto === true;
+        const fechaRegistro = item.fecha
+            ? new Date(item.fecha).toLocaleDateString('es-CO', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric'
+              })
+            : 'Fecha registrada';
+
+        ventana.document.write(`
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8" />
+                <title>Informe Fitotécnico #${item.id} — CERES IA</title>
+                <style>
+                    body { font-family: 'Segoe UI', Arial, sans-serif; color: #252B27; margin: 40px; line-height: 1.55; }
+                    .header { border-bottom: 3px solid #163D2B; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; }
+                    .brand { color: #163D2B; font-size: 22px; font-weight: 800; letter-spacing: 1px; margin: 0; }
+                    .sub { color: #39764B; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+                    .meta { font-size: 12px; color: #5C6660; text-align: right; }
+                    .title { font-size: 20px; color: #163D2B; margin: 0 0 4px 0; }
+                    .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: ${esApto ? '#E5EDE2' : '#FEF3C7'}; color: ${esApto ? '#163D2B' : '#92400E'}; margin-top: 8px; }
+                    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+                    .box { background: #F8F8F3; border: 1px solid #DCE3D9; border-radius: 8px; padding: 12px; }
+                    .box label { display: block; font-size: 11px; color: #5C6660; text-transform: uppercase; font-weight: 700; }
+                    .section { margin-top: 18px; border-left: 3px solid #C6A66A; padding-left: 14px; }
+                    .section h3 { font-size: 14px; color: #163D2B; margin: 0 0 6px 0; }
+                    .footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #DCE3D9; font-size: 11px; color: #5C6660; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <p class="brand">CERES IA</p>
+                        <span class="sub">Registro Histórico Fitotécnico #${item.id}</span>
+                    </div>
+                    <div class="meta">
+                        <div>Fecha: ${fechaRegistro}</div>
+                        <div>Productor: ${item.usuario || usuario?.nombre || 'Usuario'}</div>
+                    </div>
+                </div>
+                <h1 class="title">${item.planta || 'Especie Evaluada'}</h1>
+                <span class="badge">${esApto ? 'Viable en la zona evaluada' : 'Requiere atención técnica'}</span>
+                <div class="grid">
+                    <div class="box"><label>Ubicación y Microclima</label><strong>${item.ubicacion || 'Zona evaluada'}${item.temperatura != null ? ` (${Math.round(item.temperatura)}°C / ${Math.round(item.humedad ?? 0)}% HR)` : ''}</strong></div>
+                    <div class="box"><label>Sustrato Evaluado</label><strong>${item.tipo_suelo || 'Franco arcilloso'}</strong></div>
+                </div>
+                <div class="section">
+                    <h3>Diagnóstico Fitosanitario y Protocolo</h3>
+                    <p>${(item.diagnostico || '').replace(/\n/g, '<br/>')}</p>
+                </div>
+                <div class="footer">Documento exportado desde el Historial de CERES IA · Protegido bajo Ley 1581 de 2012.</div>
+            </body>
+            </html>
+        `);
+        ventana.document.close();
+        ventana.focus();
+        ventana.print();
     };
 
     const filtrados = historial.filter((item) => {
@@ -192,6 +267,17 @@ function HistorialAnalisis({ usuario }) {
                                             onClick={() => setExpandidoId(abierto ? null : item.id)}
                                         >
                                             {abierto ? 'Ocultar informe' : 'Ver informe'}
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="ceres-btn-outline"
+                                            style={{ height: '38px', padding: '0 0.75rem', fontSize: '0.8rem' }}
+                                            title="Descargar ficha PDF"
+                                            onClick={() => descargarFichaHistorial(item)}
+                                        >
+                                            <FilePdfIcon />
+                                            <span>PDF</span>
                                         </button>
 
                                         <button
